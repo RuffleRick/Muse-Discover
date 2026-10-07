@@ -37,3 +37,11 @@ Any previous `data/resources.json` cache is retained as private inactive data. T
 ## Folder consolidation
 
 Previously this task pointed to an empty Git folder while source lived under `C:\Users\richa\Muse`. Source, local state, and theme backups were copied into this project. The old folder is retained as a fallback snapshot. Launchers now target this project to avoid divergent libraries.
+
+## Optional private mobile gateway
+
+The main app and model bindings remain loopback. Desktop-only `/api/mobile` and `/api/mobile/enable`/`disable` routes expose status and explicit enable/revoke controls. `mobile-network.mjs` checks the standard Windows Tailscale installation and signed-in device hostname, rejects an occupied HTTPS port 8443 or existing public Funnel configuration, and owns a hidden foreground `tailscale serve --https=8443 http://127.0.0.1:3009` process. It does not reset existing Serve configuration, use Funnel, or open router/firewall ports.
+
+`mobile-access.mjs` binds a separate gateway only to `127.0.0.1:3009`. Tailscale terminates private HTTPS. Gateway requests require the expected phone Host; mutations also require that HTTPS Origin and JSON. Before pairing only the login page and its assets are served; data requires a random, in-memory browser session. Ten-character random codes expire after ten minutes, are single-use, and have a global guess limit (the proxy peer is loopback). Sessions expire after twelve hours. Cookies are Secure, HttpOnly, and SameSite=Strict. An allowlist proxy rewrites trusted localhost Host/Origin and drops client forwarding headers. Phone clients cannot read pairing codes, enable access, or stop the PC app. They can use the existing library and generation routes after pairing.
+
+Disabling access, stopping Muse, or a tunnel exit revokes sessions and closes the gateway. Tunnel startup failures leave the gateway off. Enabling access suppresses the app's two-minute idle exit so it remains reachable while the desktop browser is closed; this does not start inference or source scanning. Restarting Muse defaults to mobile access off. Account/device sign-in and HTTPS enablement require the user's external setup; no account credentials or pairing state are persisted in the repository or library.

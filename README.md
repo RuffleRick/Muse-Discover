@@ -50,3 +50,7 @@ Back up `local-muse/data/library.json` before moving, uninstalling, or restoring
 The older `C:\Users\richa\Muse` folder is retained as a fallback snapshot. Launchers have been redirected to this project; use this project's data and source for future work.
 
 See [architecture](Docs/ARCHITECTURE.md), [roadmap](Docs/ROADMAP.md), [limitations](Docs/ISSUES.md), and [verification notes](Docs/VERIFICATION.md).
+
+## Optional mobile access
+
+Open **Library tools → Mobile access** on the PC. Muse supports private phone access at home or away using Tailscale and a one-time pairing code. PC/phone installation and account setup are required; mobile access stays off until enabled. See [Mobile setup](Docs/MOBILE-ACCESS.md). The PC must stay awake; the model remains on demand.

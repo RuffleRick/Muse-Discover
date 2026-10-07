@@ -5,9 +5,12 @@ import {randomUUID} from 'node:crypto';
 import {ROOT,DATA,load,save,text,categories,collect,makeKit} from './core.mjs';
 import {generate,stopModel,model} from './engine.mjs';
 import {explorationOptions} from './exploration.mjs';
+import {createMobileAccess} from './mobile-access.mjs';
 import {MAX_IMPORT_BYTES,exportLibrary,validateLibrary,mergeLibrary,clearGenerated,createBackup,listBackups,readBackup} from './library-tools.mjs';
 const port=3008;
 const origin='http://127.0.0.1:'+port;
+const mobile=createMobileAccess(ROOT);
+let mobileChanging=false;
 await mkdir(DATA,{recursive:true});
 let state=await load();
 let job=null,closing=false,managing=false,lastSeen=Date.now();
@@ -56,6 +59,16 @@ const server=http.createServer(async(req,res)=>{
  if(req.headers.origin!==origin||!req.headers['content-type']?.startsWith('application/json')){reply(res,403,{error:'Open Muse locally to perform this action.'});return;}
  if(closing){reply(res,503,{error:'Muse is closing.'});return;}
  if(managing){reply(res,409,{error:'A library operation is in progress. Please wait.'});return;}
+ }
+ if(url.pathname==='/api/mobile'&&req.method==='GET'){
+ lastSeen=Date.now();reply(res,200,await mobile.status());return;
+ }
+ if(['/api/mobile/enable','/api/mobile/disable'].includes(url.pathname)&&req.method==='POST'){
+ if(mobileChanging){reply(res,409,{error:'Mobile setup is in progress.'});return;}
+ mobileChanging=true;lastSeen=Date.now();
+ try{await body(req);if(url.pathname.endsWith('/enable'))reply(res,200,await mobile.enable());else{await mobile.disable();reply(res,200,await mobile.status());}}
+ finally{mobileChanging=false;}
+ return;
  }
  if(url.pathname==='/api/status'&&req.method==='GET'){
  lastSeen=Date.now();reply(res,200,{app:'muse-local',job,model,libraryCount:state.ideas.length});return;
@@ -127,6 +140,8 @@ const server=http.createServer(async(req,res)=>{
 });
 async function shutdown(){
  if(closing)return;closing=true;
+ while(mobileChanging)await new Promise(resolve=>setTimeout(resolve,100));
+ await mobile.disable();
  await stopModel();
  await writeQueue.catch(()=>{});
  server.close();
@@ -134,6 +149,5 @@ async function shutdown(){
 }
 process.on('SIGINT',()=>void shutdown());process.on('SIGTERM',()=>void shutdown());
 process.on('uncaughtException',e=>{console.error(e);void shutdown();});
-setInterval(()=>{if(Date.now()-lastSeen>120000)void shutdown();},15000).unref();
+setInterval(()=>{if(!mobile.enabled()&&!mobileChanging&&Date.now()-lastSeen>120000)void shutdown();},15000).unref();
 server.listen(port,'127.0.0.1',()=>console.log('Muse ready at '+origin+' — model starts only on an explicit generation request.'));
-

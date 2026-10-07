@@ -4,7 +4,7 @@
 
 - Reddit is not connected; current public collection uses Hacker News and Stack Exchange.
 - Local and hosted libraries do not sync.
-- Access is local to this PC; mobile and LAN access are not enabled.
+- Optional private mobile access is implemented through Tailscale HTTPS and pairing. Tailscale installation, PC/phone sign-in, HTTPS enablement, and a physical phone/cellular test remain pending. Direct LAN/public access is not enabled.
 - Codex kits use a fixed template. They do not independently verify feasibility or market demand.
 - Small local-model outputs can still be overambitious or need editing.
 - Collections and tags are not implemented. Export/import, local backup restoration, and saved idea-tree navigation are available.

@@ -1,9 +1,10 @@
+const phone=location.hostname!=='127.0.0.1';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let data={ideas:[],pins:[]},board=[],view='board',selected=null,busy=false,jobId=null,poll=null,stopped=false;
 async function api(route,body){
  const r=await fetch(route,body===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
- const d=await r.json();if(!r.ok)throw Error(d.error||'Request failed.');return d;
+ if(r.status===401&&phone){location.reload();throw Error('Pair this phone again on your PC.');}const d=await r.json();if(!r.ok)throw Error(d.error||'Request failed.');return d;
 }
 function status(message,kind='notice'){$('status').className=kind;$('status').textContent=message;}
 function setBusy(v){busy=v;$('roll').disabled=v;$('query').disabled=v;$('category').disabled=v;$('modelStatus').textContent=v?'Generating on this PC':'Model stopped';syncTools();}
@@ -96,11 +97,11 @@ $('searchForm').onsubmit=e=>{e.preventDefault();void generate();};
 $('libraryQuery').oninput=()=>render();
 $('clearLibrarySearch').onclick=()=>{$('libraryQuery').value='';render();$('libraryQuery').focus();};
 $('board').onclick=e=>{const open=e.target.closest('[data-open]');const p=e.target.closest('[data-pin]');if(open)openIdea(open.dataset.open);else if(p)void pin(p.dataset.pin,isPinned(p.dataset.pin));};
-for(const [id,v] of [['exploreNav','board'],['pinsNav','pins'],['libraryNav','library']])$(id).onclick=()=>{view=v;render();};
+for(const [id,v] of [['exploreNav','board'],['pinsNav','pins'],['libraryNav','library']])$(id).onclick=async()=>{view=v;render();try{await load();}catch(e){status(e.message,'error');}};
 $('shuffle').onclick=()=>{if(!data.ideas.length){status('Generate your first concepts with Roll fresh ideas.');return;}board=[...data.ideas].sort(()=>Math.random()-.5).slice(0,6);view='board';render();status('Shuffled saved concepts. The model stayed stopped.');};
 $('close').onclick=()=>$('detail').close();
 $('detail').onclick=e=>{if(e.target===$('detail')){const r=$('detail').getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)$('detail').close();}};
-$('stop').onclick=async()=>{try{await api('/api/stop',{});}finally{stopped=true;clearInterval(poll);clearInterval(heartbeat);setBusy(false);$('detail').close();$('roll').disabled=true;$('stop').disabled=true;$('modelStatus').textContent='Muse stopped';status('Muse is stopped. Your library and pins are saved. Reopen with Start Muse.cmd.');}};
+$('stop').onclick=async()=>{if(phone){try{await api('/api/mobile/logout',{});location.reload();}catch(e){status(e.message,'error');}return;}try{await api('/api/stop',{});}finally{stopped=true;clearInterval(poll);clearInterval(heartbeat);setBusy(false);$('detail').close();$('roll').disabled=true;$('stop').disabled=true;$('modelStatus').textContent='Muse stopped';status('Muse is stopped. Your library and pins are saved. Reopen with Start Muse.cmd.');}};
 const heartbeat=setInterval(()=>{if(!busy&&!stopped)api('/api/status').catch(()=>{});},20000);
 load().then(()=>{if(data.job?.state==='running'){setBusy(true);jobId=data.job.id;poll=setInterval(checkJob,1500);}}).catch(e=>status(e.message,'error'));
 
@@ -117,7 +118,7 @@ async function libraryOperation(route,payload,message,changes=true){
  try{await api(route,payload);if(changes){board=[];view='library';$('libraryQuery').value='';$('detail').close();await load();}await refreshBackups();toolsStatus(message);status(message);}
  catch(e){toolsStatus(e.message);}finally{toolsBusy=false;syncTools();}
 }
-$('libraryTools').addEventListener('toggle',()=>{if($('libraryTools').open)void refreshBackups();});
+$('libraryTools').addEventListener('toggle',()=>{if($('libraryTools').open){void refreshBackups();if(!phone)void refreshMobile();}});
 $('backupChoice').onchange=syncTools;
 $('exportLibrary').onclick=async()=>{if(busy||stopped||toolsBusy)return;toolsBusy=true;syncTools();try{const library=await api('/api/library/export');download('muse-library-'+new Date().toISOString().replace(/[:.]/g,'-')+'.json',JSON.stringify(library,null,2),'application/json');toolsStatus('Library export downloaded. Keep it somewhere safe.');}catch(e){toolsStatus(e.message);}finally{toolsBusy=false;syncTools();}};
 $('importLibrary').onclick=()=>{if(!busy&&!stopped&&!toolsBusy)$('importFile').click();};
@@ -126,3 +127,17 @@ $('createBackup').onclick=()=>void libraryOperation('/api/library/backup',{},'Ba
 $('restoreBackup').onclick=()=>{const backup=backups.find(b=>b.name===$('backupChoice').value);if(!backup||busy||stopped||toolsBusy)return;if(confirm('Restore '+new Date(backup.createdAt).toLocaleString()+'? Your library and pins will be replaced with '+backup.ideas+' ideas and '+backup.pins+' pins from that backup. The current state is backed up first, so you can undo this.'))void libraryOperation('/api/library/restore',{name:backup.name,confirm:true},'Backup restored. Your previous state is available in backups.');};
 $('clearGenerated').onclick=()=>{if(busy||stopped||toolsBusy)return;if(confirm('Clear all '+data.ideas.length+' generated-library ideas? All '+data.pins.length+' pins and their notes will remain. Muse creates a backup first so you can restore the cleared ideas.'))void libraryOperation('/api/library/clear',{confirm:true},'Generated library cleared. Your pins and notes are kept; a backup is available.');};
 syncTools();
+
+
+let mobileBusy=false;
+function mobileControls(){for(const id of ['enableMobile','disableMobile','refreshMobile'])$(id).disabled=mobileBusy||stopped;}
+function showMobile(d){
+ const network=d.network.installed?(d.network.connected?'Tailscale connected.':'Sign in to Tailscale on this PC.'):'Install Tailscale on this PC to get started.';
+ $('mobileStatus').innerHTML='<p>'+esc(network)+'</p>'+(d.enabled?'<p>Open on your phone: <a href="'+esc(d.url)+'" target="_blank" rel="noopener noreferrer">'+esc(d.url)+'</a></p><p>Pairing code: <strong class="pair-code">'+esc(d.code||'Used · generate a new code to pair another browser')+'</strong></p>'+(d.code?'<p>Code expires at '+esc(new Date(d.expiresAt).toLocaleTimeString())+'.</p>':'')+'<p>'+d.sessions+' paired browser(s). Disable access to disconnect all phones.</p>':'<p>Mobile access is off. It starts only when you enable it here.</p>');
+}
+async function refreshMobile(){try{showMobile(await api('/api/mobile'));}catch(e){$('mobileStatus').textContent=e.message;}}
+async function changeMobile(action){if(mobileBusy||stopped)return;mobileBusy=true;mobileControls();$('mobileStatus').textContent='Setting up private access…';try{showMobile(await api('/api/mobile/'+action,{}));}catch(e){$('mobileStatus').textContent=e.message;}finally{mobileBusy=false;mobileControls();}}
+$('enableMobile').onclick=()=>void changeMobile('enable');
+$('disableMobile').onclick=()=>void changeMobile('disable');
+$('refreshMobile').onclick=()=>void refreshMobile();
+if(phone){$('mobileTools').hidden=true;$('stop').textContent='Disconnect phone';$('privacyNote').textContent='Private on your home PC · generation only when requested';}

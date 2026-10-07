@@ -84,3 +84,11 @@ Keep future check results specific: record what ran, its outcome, and remaining 
 - Fourteen tests passed across research, exploration, and library tools. New checks cover routing, wrong-sense/headline/thin evidence, HTML cleanup, exact source grounding, minimum prototype mechanics, known unsupported measurement/reconstruction claims, variable idea counts, cache behavior, and preservation of reasoning through export/import and backup restoration.
 - Core, engine, and browser JavaScript syntax checks passed. Model logs showed GPU loading and no truncation in the inspected prior request; this does not establish reasoning quality.
 - No revised prompt generation or controlled model comparison was run. These improvements address evidenced retrieval/validation defects; generation quality gains remain unmeasured. The private detailed assessment is excluded from Git.
+
+## Mobile access — October 7, 2026
+
+- 21 tests passed across mobile access, exploration, library tools, and research quality. Seven mobile checks cover code/session expiry and revocation, guess cooldown, gateway pairing/privacy, Host/Origin rejection, trusted proxy headers, route allowlisting, phone logout, setup failures, foreground tunnel process ownership, and refusal to reuse an occupied port/public Funnel configuration.
+- Gateway integration tests use loopback sockets and a mock app/tunnel, without accessing the private library or generating ideas. The phone disconnect handler was exercised in an isolated JavaScript DOM stub, not a real mobile browser.
+- Syntax checks passed for server, gateway, Tailscale adapter, app browser code, and pairing browser code.
+- Live main-server checks found mobile access off and Tailscale absent. An enable request returned 400 without opening the gateway; an enable request with a foreign Origin returned 403. All 83 ideas and 4 pins remained, and the library SHA-256 was unchanged.
+- Actual Tailscale HTTPS startup, Windows tunnel termination/config cleanup, phone rendering, and access over a cellular network remain unverified until Tailscale is installed and both devices are signed in. No inference was requested. No router, firewall, or hosted-site changes were made.
