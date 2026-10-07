@@ -23,6 +23,7 @@ function idea(i){
  out.features=i.features.map(f=>string(f,'feature'));out.sources=i.sources.map(source);out.mode=string(i.mode||'imported','mode',100);
  if(i.exploration){out.exploration=explorationOptions(i.exploration);out.exploration.combineName=string(i.exploration.combineName||'','combined name');}
  if(i.relatedIdeaIds){if(!Array.isArray(i.relatedIdeaIds)||i.relatedIdeaIds.length>20)throw Error('Invalid related ideas.');out.relatedIdeaIds=i.relatedIdeaIds.map(v=>id(v,'related ID'));}
+ if(i.reasoning){const r=i.reasoning;if(!Array.isArray(r.inputs)||r.inputs.length<1||r.inputs.length>5)throw Error('Invalid prototype inputs.');out.reasoning={sourceQuote:string(r.sourceQuote,'source excerpt',350),inputs:r.inputs.map(v=>string(v,'prototype input',300)),workflow:string(r.workflow,'workflow',700),limitations:string(r.limitations,'limitations',500)};}
  return out;
 }
 export function validateLibrary(value){

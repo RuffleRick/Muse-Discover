@@ -6,9 +6,9 @@
 
 `server.mjs` serves the interface on `127.0.0.1:3008`, validates Host and POST Origin, manages generation jobs, and persists state. A browser heartbeat keeps the lightweight server available while tabs are open; it does not run inference. Stop Muse ends the server and its owned model job.
 
-`core.mjs` collects public sources, maintains caching and backoff, validates concepts, and builds Codex kits from a fixed template. Its storage location is relative to the source file, so moving the complete app directory preserves its behavior.
+`core.mjs` collects public sources, maintains caching and backoff, validates concepts, and builds Codex kits from a fixed template. `research-quality.mjs` routes topical searches, ranks substantive excerpts, and rejects known wrong-sense results. New cache keys bypass the previous unfiltered source cache. New Stack Exchange IDs include the community. Its storage location is relative to the source file, so moving the complete app directory preserves its behavior.
 
-`engine.mjs` starts the installed Ollama executable using a dedicated local port, `127.0.0.1:11435`. Generation uses `qwen3.5:4b`, disables cloud inference, passes `keep_alive:0`, and stops its owned process tree in a finally block.
+`engine.mjs` starts the installed Ollama executable using a dedicated local port, `127.0.0.1:11435`. Generation uses `qwen3.5:4b`, disables cloud inference, passes `keep_alive:0`, and stops its owned process tree in a finally block. A roll may return one to three concepts. Structured output includes a first-source excerpt, inputs, workflow, and limitations; deterministic checks reject missing grounding and specific impossible measurement/reconstruction claims before saving. The checks are partial, not a semantic verifier. Existing saved ideas are unaffected.
 
 `public/index.html`, `public/style.css`, and `public/app.js` contain the interface. Theme changes preserve the DOM IDs used by the existing browser behavior.
 
@@ -28,7 +28,7 @@ Any previous `data/resources.json` cache is retained as private inactive data. T
 
 ## Library management
 
-`library-tools.mjs` defines the Muse v1 portable format and validates imported IDs, field lengths, categories, source URLs, notes, and relationships. Export includes ideas and standalone pins, excluding internal research caches. Import merges by ID with existing data taking precedence; clear removes only `ideas`. Disk backups are atomic snapshots under `data/backups/`. Restore replaces ideas and pins while retaining internal cache settings. Import, clear, and restore create a pre-change snapshot before saving and updating the live state. A management lock blocks generation and pin changes; management is rejected while generation runs. Import bodies are size-limited, and existing localhost/Origin checks apply to all mutation routes. The collapsed Library tools menu exposes confirmations, snapshot counts, merge behavior, and restore replacement semantics.
+`library-tools.mjs` defines the Muse v1 portable format and validates imported IDs, field lengths, categories, source URLs, notes, and relationships. Export includes ideas, prototype reasoning, and standalone pins, excluding internal research caches. Import merges by ID with existing data taking precedence; clear removes only `ideas`. Disk backups are atomic snapshots under `data/backups/`. Restore replaces ideas and pins while retaining internal cache settings. Import, clear, and restore create a pre-change snapshot before saving and updating the live state. A management lock blocks generation and pin changes; management is rejected while generation runs. Import bodies are size-limited, and existing localhost/Origin checks apply to all mutation routes. The collapsed Library tools menu exposes confirmations, snapshot counts, merge behavior, and restore replacement semantics.
 
 ## Hosted source
 

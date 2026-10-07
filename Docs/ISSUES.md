@@ -17,3 +17,5 @@
 - Original bright interface: applied centered Forest Room layout with Midnight colors; kept original-theme backup.
 - Misleading "Ollama is not installed" after theme verification: restarted the app with normal filesystem access and added a distinct access-denied error. Verified three pinned-idea variations and model shutdown afterward.
 - Empty project file browser: consolidated active source, personal state, theme backups, and documentation into the selected Muse-Discover project; redirected launchers.
+
+- Quality checks reject some known failures but remain lexical and rule-based. Semantic constraint compliance and general feasibility need controlled model evaluation; the revised prompt has not been benchmarked through new generation.

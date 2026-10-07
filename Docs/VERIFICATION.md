@@ -75,3 +75,12 @@ Keep future check results specific: record what ran, its outcome, and remaining 
 - Live export returned all 83 generated ideas and 4 pins. A manual backup was created and listed. A malformed import returned 400; a foreign-Origin clear request returned 403. The library file hash remained unchanged, and the model service remained stopped.
 - Clear and restore were exercised on isolated test data, not the user’s private library.
 - No browsers were available through the UI tool, so visual verification and native file-picker testing could not be performed.
+
+## Research and idea quality — October 7, 2026
+
+- Inspected retrieval, prompt/schema validation, installed model metadata, and runtime logs without starting inference or changing saved ideas/pins.
+- Replayed 17 cached searches (187 candidate excerpts) through the initial relevance filter: 65 were retained after caps and filtering. This is a filtering measurement, not a precision or idea-quality score. Education-specific exclusions were tightened afterward.
+- Live retrieval checks returned detailed sources for card games, photography, and special education. Education excerpt review exposed and then rejected legal-training and separated-word false matches. Some retained comments are contextual education anecdotes beneath unrelated story headlines.
+- Fourteen tests passed across research, exploration, and library tools. New checks cover routing, wrong-sense/headline/thin evidence, HTML cleanup, exact source grounding, minimum prototype mechanics, known unsupported measurement/reconstruction claims, variable idea counts, cache behavior, and preservation of reasoning through export/import and backup restoration.
+- Core, engine, and browser JavaScript syntax checks passed. Model logs showed GPU loading and no truncation in the inspected prior request; this does not establish reasoning quality.
+- No revised prompt generation or controlled model comparison was run. These improvements address evidenced retrieval/validation defects; generation quality gains remain unmeasured. The private detailed assessment is excluded from Git.

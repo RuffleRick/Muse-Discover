@@ -21,3 +21,5 @@
 - Removed the Learning sidebar, navigation toggle, daily resource searches, and resource API endpoints. Restored the centered layout and retained private saved ideas, pins, and the inactive resource cache.
 
 - Added an expandable Library tools hub with portable JSON export/import, manual and automatic pre-change backups, snapshot restoration, and clearing generated ideas while preserving standalone pins and notes. Import merges by ID and restoration can be undone through its pre-change snapshot.
+
+- Assessed saved outputs, source retrieval, model configuration, and runtime logs. Corrected topic routing, filtered thin/headline and wrong-sense sources, cleaned excerpts before truncation, added grounded prototype reasoning and targeted logic checks, reduced generation padding, and preserved new reasoning in library transfers and Codex kits. No existing ideas were rewritten and no model was downloaded.

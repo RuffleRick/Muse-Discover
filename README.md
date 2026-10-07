@@ -11,11 +11,12 @@ This folder is the main Muse project:
 
 ## Current functionality
 
-- Search public discussions and roll three new concepts using the local model.
-- Explore three variations of a selected or pinned concept.
+- Search public discussions and roll up to three new concepts using the local model.
+- Explore up to three variations of a selected or pinned concept.
 - Browse and shuffle saved concepts without generation.
 - Search Saved library and Pinned instantly by names, descriptions, features, source text, or personal notes. Multiple words can match different parts of an idea; use Clear to reset.
 - Open **Library tools** for JSON export/import, local backups and restoration, or clearing generated ideas while keeping pins.
+- New ideas include prototype inputs, workflow, limits, and a cited discussion excerpt. A roll returns up to three concepts and rejects known unsupported claims before saving.
 - Explore an idea with keep/change instructions, constraints, audience adaptation, creativity levels, and combinations. Revisit saved branches in its idea tree.
 - Pin ideas and save personal notes.
 - Create, copy, or download a Codex opening prompt and build workflow.

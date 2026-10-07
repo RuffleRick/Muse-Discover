@@ -2,12 +2,13 @@ import {readFile, writeFile, mkdir, rename} from 'node:fs/promises';
 import {randomUUID} from 'node:crypto';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {routeSearch,selectSources} from './research-quality.mjs';
 export const ROOT = path.dirname(fileURLToPath(import.meta.url));
 export const DATA = path.join(ROOT, 'data');
 export const categories = ['Everything','Games','Everyday life','Community','Hobbies','Creative','Learning','Tools'];
 export function text(value, max=1000) { return typeof value === 'string' ? value.trim().slice(0,max) : ''; }
-export function plain(value) {
- return text(value,1600).replace(/<[^>]*>/g,' ').replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&#39;|&apos;/g,"'").replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&#(\d+);/g,(_,n)=>String.fromCharCode(Number(n))).replace(/\s+/g,' ').trim();
+export function plain(value,max=1600) {
+ return text(value,1000000).replace(/<[^>]*>/g,' ').replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&#39;|&apos;/g,"'").replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&#(\d+);/g,(_,n)=>String.fromCharCode(Number(n))).replace(/&#x([0-9a-f]+);/gi,(_,n)=>String.fromCharCode(parseInt(n,16))).replace(/\s+/g,' ').trim().slice(0,max);
 }
 export async function load() {
  try { const d=JSON.parse(await readFile(path.join(DATA,'library.json'),'utf8')); if (!Array.isArray(d.ideas)||!Array.isArray(d.pins)) throw Error('Invalid saved library'); return d; }
@@ -37,16 +38,16 @@ async function getJSON(url) {
 }
 export async function collect(d,category,query) {
  const q=query.toLowerCase();
- const hints=[[/solitaire|card game|board game|puzzle|gaming/,'Games','gaming'],[/garden|plant|soil|seed/,'Hobbies','gardening'],[/photo|camera/,'Hobbies','photography'],[/cook|meal|food|pantry|leftover/,'Everyday life','cooking'],[/house|home repair|diy/,'Everyday life','diy'],[/language|vocabulary|speaking/,'Learning','languagelearning'],[/learn|study|education/,'Learning','ell'],[/music|instrument/,'Creative','music'],[/writ|story|novel/,'Creative','writing'],[/travel|trip/,'Community','travel'],[/parent|family|child/,'Community','parenting'],[/file|folder|computer|software|workflow|freelance/,'Tools','superuser']];
- const hint=hints.find(([regex])=>regex.test(q));
- const picked=category==='Everything'?(hint?.[1]||categories[1+Math.floor(Math.random()*7)]):category;
- const list=sites[picked]; const site=hint&&list.includes(hint[2])?hint[2]:list[Math.floor(Math.random()*list.length)];
+ const routing=routeSearch(category,query);
+ const picked=routing?.category||(category==='Everything'?categories[1+Math.floor(Math.random()*7)]:category);
+ const list=sites[picked];const site=routing?routing.site:list[Math.floor(Math.random()*list.length)];
  const term=query || seeds[picked][Math.floor(Math.random()*seeds[picked].length)];
- const cacheKey=site+':'+term;
+ const cacheKey='quality-v2:'+picked+':'+site+':'+term;
  const cached=d.sourceCache?.[cacheKey];
  if(cached && Date.now()-cached.at<10*60*1000) return {...cached.value,cached:true};
  const warnings=[]; const sources=[];
- if(Date.now()<(d.backoffUntil||0)) warnings.push('Stack Exchange requested a pause; using other available sources.');
+ if(!site) warnings.push('No suitable Stack Exchange community for this topic; using detailed Hacker News discussions.');
+ else if(Date.now()<(d.backoffUntil||0)) warnings.push('Stack Exchange requested a pause; using other available sources.');
  else {
  try {
  const u=new URL('https://api.stackexchange.com/2.3/search/advanced');
@@ -57,31 +58,32 @@ export async function collect(d,category,query) {
  if(r.quota_remaining===0) d.backoffUntil=Math.max(d.backoffUntil||0,Date.now()+24*60*60*1000);
  for(const s of r.items||[]) {
  if(!/^https:\/\/(?:[a-z0-9-]+\.)?(?:stackexchange\.com|stackoverflow\.com|superuser\.com|serverfault\.com)\//.test(s.link)) continue;
- sources.push({id:'se-'+s.question_id,title:plain(s.title),url:s.link,excerpt:plain(s.body).slice(0,750),author:plain(s.owner?.display_name),authorUrl:s.owner?.link||'',license:s.content_license||'CC BY-SA',site,score:s.score,postedAt:new Date(s.creation_date*1000).toISOString(),retrievedAt:new Date().toISOString()});
+ sources.push({id:'se-'+site+'-'+s.question_id,title:plain(s.title),url:s.link,excerpt:plain(s.body,1200),author:plain(s.owner?.display_name),authorUrl:s.owner?.link||'',license:s.content_license||'CC BY-SA',site,score:s.score,postedAt:new Date(s.creation_date*1000).toISOString(),retrievedAt:new Date().toISOString()});
  }
  } catch(e) {warnings.push('Stack Exchange: '+e.message);}
  }
  try {
  const u=new URL('https://hn.algolia.com/api/v1/search');
- u.search=new URLSearchParams({query:term,hitsPerPage:'8',tags:'(story,comment)'}).toString();
+ u.search=new URLSearchParams({query:term,hitsPerPage:'20',tags:'comment'}).toString();
  const r=await getJSON(u);
- for(const s of r.hits||[]) sources.push({id:'hn-'+s.objectID,title:plain(s.title||s.story_title||'Hacker News discussion'),url:'https://news.ycombinator.com/item?id='+encodeURIComponent(s.objectID),excerpt:plain(s.comment_text||s.story_text||s.title),author:s.author||'',site:'Hacker News',postedAt:s.created_at,retrievedAt:new Date().toISOString()});
+ for(const s of r.hits||[]) sources.push({id:'hn-'+s.objectID,title:plain(s.title||s.story_title||'Hacker News discussion'),url:'https://news.ycombinator.com/item?id='+encodeURIComponent(s.objectID),excerpt:plain(s.comment_text||s.story_text||'',1200),author:s.author||'',site:'Hacker News',postedAt:s.created_at,retrievedAt:new Date().toISOString()});
  } catch(e) { warnings.push('Hacker News: '+e.message); }
- const clean=sources.filter(s=>s.title && s.excerpt).slice(0,12);
- if(!clean.length) throw Error('No source discussions found for "'+term+'". Try a broader topic.');
+ const clean=selectSources(sources,term);
+ if(clean.length<sources.length)warnings.push('Discarded headlines, thin excerpts, or results that did not clearly match the topic.');
+ if(!clean.length) throw Error('No sufficiently relevant, detailed discussions found for "'+term+'". Try a broader topic.');
  const value={category:picked,term,sources:clean,warnings};
  d.sourceCache=d.sourceCache||{};
  d.sourceCache[cacheKey]={at:Date.now(),value};
  const keys=Object.keys(d.sourceCache); for(const k of keys.slice(0,Math.max(0,keys.length-60)))delete d.sourceCache[k];
  return value;
 }
-export const ideaSchema={type:'object',properties:{ideas:{type:'array',minItems:3,maxItems:3,items:{type:'object',properties:{
+export const ideaSchema={type:'object',properties:{ideas:{type:'array',minItems:1,maxItems:3,items:{type:'object',properties:{
  name:{type:'string'},category:{type:'string',enum:categories.slice(1)},pitch:{type:'string'},twist:{type:'string'},audience:{type:'string'},
  features:{type:'array',minItems:3,maxItems:3,items:{type:'string'}},validation:{type:'string'},evidence:{type:'string'},
  sourceIds:{type:'array',minItems:1,maxItems:3,items:{type:'string'}}
 },required:['name','category','pitch','twist','audience','features','validation','evidence','sourceIds'],additionalProperties:false}}},required:['ideas'],additionalProperties:false};
 export function validateIdeas(raw,sources,parent,existing=[]) {
- if(!Array.isArray(raw?.ideas)||raw.ideas.length!==3) throw Error('The local model did not return three complete ideas. Try rolling again.');
+ if(!Array.isArray(raw?.ideas)||raw.ideas.length<1||raw.ideas.length>3) throw Error('The local model did not return one to three complete ideas. Try rolling again.');
  const sourceMap=new Map(sources.map(s=>[s.id,s]));
  const seen=new Set(existing.map(i=>i.name.toLowerCase().replace(/[^a-z0-9]/g,'')));
  const result=[];
@@ -109,9 +111,10 @@ export function makeKit(idea,platform='web app',note='') {
  'Test representative inputs, failure states, accessibility, and persistence. '+idea.validation,
  'Write setup instructions and a short usage guide. Summarize what is complete and what needs validation.'
  ];
+ const mechanics=idea.reasoning?'\n\nPrototype inputs: '+idea.reasoning.inputs.join('; ')+'\nInteraction: '+idea.reasoning.workflow+'\nLimits: '+idea.reasoning.limitations:'';
  const direction=idea.exploration;
  const branchDirection=direction?'\n\nExploration direction:\n'+[direction.keep&&'Preserve: '+direction.keep,direction.change&&'Requested change: '+direction.change,direction.constraints&&'Constraints: '+direction.constraints,direction.audience&&'Adapt for: '+direction.audience,direction.combineName&&'Combined with: '+direction.combineName].filter(Boolean).join('\n'):'';
- const prompt='Build a '+platform+' prototype called '+idea.name+'.\n\nAudience: '+idea.audience+'\nConcept: '+idea.pitch+'\nDistinctive twist: '+idea.twist+'\n\nMVP:\n'+idea.features.map(f=>'- '+f).join('\n')+'\n\nMy direction: '+(note||'Keep the first version small and easy to test.')+branchDirection+'\n\nResearch inspiration (does not prove demand, novelty, or market saturation):\n'+idea.sources.map(s=>s.title+' — '+s.url).join('\n')+'\n\nStart by inspecting the workspace and writing a brief implementation plan. Build an end-to-end usable prototype, validate it, and explain how to run it. Do not assume paid services are authorized. Do not publish or send messages without my explicit request.';
+ const prompt='Build a '+platform+' prototype called '+idea.name+'.\n\nAudience: '+idea.audience+'\nConcept: '+idea.pitch+'\nDistinctive twist: '+idea.twist+'\n\nMVP:\n'+idea.features.map(f=>'- '+f).join('\n')+'\n\nMy direction: '+(note||'Keep the first version small and easy to test.')+branchDirection+mechanics+'\n\nResearch inspiration (does not prove demand, novelty, or market saturation):\n'+idea.sources.map(s=>s.title+' — '+s.url).join('\n')+'\n\nStart by inspecting the workspace and writing a brief implementation plan. Build an end-to-end usable prototype, validate it, and explain how to run it. Do not assume paid services are authorized. Do not publish or send messages without my explicit request.';
  return {prompt,workflow,text:prompt+'\n\nWORKFLOW\n'+workflow.map((s,i)=>(i+1)+'. '+s).join('\n\n')};
 }
 
