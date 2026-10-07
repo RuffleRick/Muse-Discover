@@ -94,3 +94,10 @@ Keep future check results specific: record what ran, its outcome, and remaining 
 - Actual Tailscale HTTPS startup, Windows tunnel termination/config cleanup, phone rendering, and access over a cellular network remain unverified until Tailscale is installed and both devices are signed in. No inference was requested. No router, firewall, or hosted-site changes were made.
 
 - Subsequent installation attempt: winget downloaded and hash-verified Tailscale 1.102.4, then waited for Windows administrator approval. Computer Use observed the verified Tailscale publisher prompt; automated mouse and keyboard approval attempts did not dismiss it. The executable was still absent at the last check. Installation and remote connectivity are not complete. The user requested holding further setup until returning to the home PC.
+
+## Need-signal research — October 7, 2026
+
+- Added checks for exact complaint/request/workaround quotes, negation and resolved/happy workflows, excerpt-level topic relevance, cross-author/discussion grouping, non-merging of unrelated needs, duplicate text, unknown identity, evidence-first selection, fresh-roll signal grounding, bounded model guidance, creative-interest fallback, branch directions, quote bounds, escaped browser evidence, Codex kit context, and export/import/backup preservation with recomputed counts.
+- Live public retrieval dry-runs returned six excerpts per topic for card games, file organization, and gardening, with 10, 6, and 7 signal matches respectively. None of these selected samples established a repeated group. This is a small retrieval observation, not a precision/recall benchmark or evidence of market demand. Later duplicate normalization was tightened without another live fetch.
+- The private library hash was unchanged. No model inference, idea generation, or private-state mutation was requested during these checks. Full real-model output assessment and visual browser testing remain to be done on explicit user rolls.
+- All 31 regression checks and syntax checks passed, including research-panel rendering in an isolated DOM stub. This is not a physical browser or model-output test.

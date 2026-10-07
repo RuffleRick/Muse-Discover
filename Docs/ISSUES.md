@@ -19,3 +19,5 @@
 - Empty project file browser: consolidated active source, personal state, theme backups, and documentation into the selected Muse-Discover project; redirected launchers.
 
 - Quality checks reject some known failures but remain lexical and rule-based. Semantic constraint compliance and general feasibility need controlled model evaluation; the revised prompt has not been benchmarked through new generation.
+
+- Need-signal detection is a first version based on phrases and word overlap. It can miss negation, sarcasm, paraphrases, and cross-sentence context, or flag wishes that already have good solutions. Repeated author identifiers are not verified independent people. The revised generation prompt still needs output-quality evaluation on explicit user rolls.

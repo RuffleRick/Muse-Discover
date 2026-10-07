@@ -54,3 +54,5 @@ See [architecture](Docs/ARCHITECTURE.md), [roadmap](Docs/ROADMAP.md), [limitatio
 ## Optional mobile access
 
 **In progress, not complete.** The app-side controls are built under **Library tools → Mobile access**, but Tailscale installation is waiting for Windows administrator approval. Account setup and an actual phone connection test remain. Resume at the home PC using [Mobile setup](Docs/MOBILE-ACCESS.md). The PC must stay awake; the model remains on demand.
+
+New rolls now prioritize complaints, wishes, and troublesome workarounds, with a Research signals explanation in each new idea. Similar needs across discussions are provisional evidence; ideas with no detected need are labeled interest-led. Existing ideas are unchanged.

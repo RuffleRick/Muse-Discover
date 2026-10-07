@@ -3,6 +3,7 @@ import path from 'node:path';
 import {randomUUID} from 'node:crypto';
 import {categories} from './core.mjs';
 import {explorationOptions} from './exploration.mjs';
+import {researchSummary} from './opportunity-signals.mjs';
 export const MAX_IMPORT_BYTES=20*1024*1024;
 function string(v,key,max=2000){if(typeof v!=='string'||v.length>max)throw Error('Invalid or oversized '+key+'.');return v;}
 function id(v,key){const s=string(v,key,100);if(!s.trim())throw Error('Missing '+key+'.');return s;}
@@ -11,7 +12,7 @@ function source(s){
  const url=string(s.url,'source URL',3000);let u;try{u=new URL(url);}catch{throw Error('Invalid source URL.');}
  if(!['http:','https:'].includes(u.protocol)||u.username||u.password)throw Error('Unsafe source URL.');
  const out={id:id(s.id,'source ID'),url,title:string(s.title,'source title'),excerpt:string(s.excerpt||'','source excerpt',16000)};
- for(const key of ['site','author','retrievedAt','license'])if(s[key]!==undefined)out[key]=string(s[key],key);
+ for(const key of ['site','author','authorId','discussionId','retrievedAt','license'])if(s[key]!==undefined)out[key]=string(s[key],key);
  return out;
 }
 function idea(i){
@@ -24,6 +25,7 @@ function idea(i){
  if(i.exploration){out.exploration=explorationOptions(i.exploration);out.exploration.combineName=string(i.exploration.combineName||'','combined name');}
  if(i.relatedIdeaIds){if(!Array.isArray(i.relatedIdeaIds)||i.relatedIdeaIds.length>20)throw Error('Invalid related ideas.');out.relatedIdeaIds=i.relatedIdeaIds.map(v=>id(v,'related ID'));}
  if(i.reasoning){const r=i.reasoning;if(!Array.isArray(r.inputs)||r.inputs.length<1||r.inputs.length>5)throw Error('Invalid prototype inputs.');out.reasoning={sourceQuote:string(r.sourceQuote,'source excerpt',350),inputs:r.inputs.map(v=>string(v,'prototype input',300)),workflow:string(r.workflow,'workflow',700),limitations:string(r.limitations,'limitations',500)};}
+ if(i.research)out.research=researchSummary(out.sources,string(i.research.topic||'','research topic',140));
  return out;
 }
 export function validateLibrary(value){
