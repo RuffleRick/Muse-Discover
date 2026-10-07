@@ -37,15 +37,17 @@ async function getJSON(url) {
  if(!r.ok) throw Error('Source returned HTTP '+r.status);
  return r.json();
 }
-export async function collect(d,category,query) {
+export async function collect(d,category,query,{redditSearch}={}) {
  const routing=routeSearch(category,query);
  const picked=routing?.category||(category==='Everything'?categories[1+Math.floor(Math.random()*7)]:category);
  const list=sites[picked];const site=routing?routing.site:list[Math.floor(Math.random()*list.length)];
  const term=query || seeds[picked][Math.floor(Math.random()*seeds[picked].length)];
- const cacheKey='signals-v1:'+picked+':'+site+':'+term;
- const cached=d.sourceCache?.[cacheKey];
- if(cached && Date.now()-cached.at<10*60*1000) return {...cached.value,cached:true};
  const warnings=[]; const sources=[];
+ let redditStatus=null,redditReady=!!redditSearch;
+ if(redditSearch){try{redditStatus=await redditSearch.status();}catch(e){redditReady=false;warnings.push(e.message);}}
+ const cacheKey='search-v2:'+(redditStatus?.cacheVersion||'off')+':'+picked+':'+site+':'+term;
+ const cached=d.sourceCache?.[cacheKey];
+ if(cached && Date.now()-cached.at<10*60*1000) return {...cached.value,warnings:[...cached.value.warnings,...warnings],cached:true};
  if(!site) warnings.push('No suitable Stack Exchange community for this topic; using detailed Hacker News discussions.');
  else if(Date.now()<(d.backoffUntil||0)) warnings.push('Stack Exchange requested a pause; using other available sources.');
  else {
@@ -72,6 +74,7 @@ export async function collect(d,category,query) {
  if(result.status==='rejected'){warnings.push('Hacker News: '+result.reason.message);continue;}
  for(const s of result.value.hits||[]) sources.push({id:'hn-'+s.objectID,title:plain(s.title||s.story_title||'Hacker News discussion'),url:'https://news.ycombinator.com/item?id='+encodeURIComponent(s.objectID),excerpt:plain(s.comment_text||s.story_text||'',1200),author:s.author||'',...(s.author?{authorId:String(s.author)}:{}),...(s.story_id?{discussionId:String(s.story_id)}:{}),site:'Hacker News',postedAt:s.created_at,retrievedAt:new Date().toISOString()});
  }
+ if(redditReady){try{const reddit=await redditSearch.search(term);sources.push(...reddit.sources);warnings.push(...reddit.warnings);}catch(e){warnings.push(e.message);}}
  const selection=selectOpportunitySources(sources,term),clean=selection.sources;
  if(clean.length<sources.length)warnings.push('Kept up to six relevant excerpts, prioritizing need signals and excluding duplicates or weak/off-topic results.');
  if(!clean.length) throw Error('No sufficiently relevant, detailed discussions found for "'+term+'". Try a broader topic.');
@@ -121,6 +124,7 @@ export function makeKit(idea,platform='web app',note='') {
  const direction=idea.exploration;
  const branchDirection=direction?'\n\nExploration direction:\n'+[direction.keep&&'Preserve: '+direction.keep,direction.change&&'Requested change: '+direction.change,direction.constraints&&'Constraints: '+direction.constraints,direction.audience&&'Adapt for: '+direction.audience,direction.combineName&&'Combined with: '+direction.combineName].filter(Boolean).join('\n'):'';
  const prompt='Build a '+platform+' prototype called '+idea.name+'.\n\nAudience: '+idea.audience+'\nConcept: '+idea.pitch+'\nDistinctive twist: '+idea.twist+'\n\nMVP:\n'+idea.features.map(f=>'- '+f).join('\n')+'\n\nMy direction: '+(note||'Keep the first version small and easy to test.')+branchDirection+mechanics+'\n\nResearch inspiration (does not prove demand, novelty, or market saturation):\n'+idea.sources.map(s=>s.title+' — '+s.url).join('\n')+'\n\nStart by inspecting the workspace and writing a brief implementation plan. Build an end-to-end usable prototype, validate it, and explain how to run it. Do not assume paid services are authorized. Do not publish or send messages without my explicit request.';
- return {prompt:prompt+research,workflow,text:prompt+research+'\n\nWORKFLOW\n'+workflow.map((s,i)=>(i+1)+'. '+s).join('\n\n')};
+ const snippetNote=idea.sources.some(s=>s.kind==='search-snippet'||s.id.startsWith('reddit-search-'))?'\n\nSome research inspiration comes from Tavily search snippets of Reddit links. Full threads were not fetched or verified; snippets do not establish complaints, repeated needs, or demand. Open the cited links and check context before relying on them.':'';
+ return {prompt:prompt+research+snippetNote,workflow,text:prompt+research+snippetNote+'\n\nWORKFLOW\n'+workflow.map((s,i)=>(i+1)+'. '+s).join('\n\n')};
 }
 

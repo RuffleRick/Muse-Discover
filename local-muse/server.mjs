@@ -6,10 +6,12 @@ import {ROOT,DATA,load,save,text,categories,collect,makeKit} from './core.mjs';
 import {generate,stopModel,model} from './engine.mjs';
 import {explorationOptions} from './exploration.mjs';
 import {createMobileAccess} from './mobile-access.mjs';
+import {createRedditSearch} from './reddit-search.mjs';
 import {MAX_IMPORT_BYTES,exportLibrary,validateLibrary,mergeLibrary,clearGenerated,createBackup,listBackups,readBackup} from './library-tools.mjs';
 const port=3008;
 const origin='http://127.0.0.1:'+port;
 const mobile=createMobileAccess(ROOT);
+const redditSearch=createRedditSearch(DATA);
 let mobileChanging=false;
 await mkdir(DATA,{recursive:true});
 let state=await load();
@@ -37,7 +39,7 @@ async function runJob(input){
  if(combined)sourceSet.sources=[...new Map([...parent.sources,...combined.sources].map(s=>[s.id,s])).values()];
  }else{
  job.message='Finding public discussions…';
- sourceSet=await collect(state,input.category,input.query);
+ sourceSet=await collect(state,input.category,input.query,{redditSearch});
  await persist();
  }
  if(closing)throw Error('Muse is shutting down.');
@@ -59,6 +61,13 @@ const server=http.createServer(async(req,res)=>{
  if(req.headers.origin!==origin||!req.headers['content-type']?.startsWith('application/json')){reply(res,403,{error:'Open Muse locally to perform this action.'});return;}
  if(closing){reply(res,503,{error:'Muse is closing.'});return;}
  if(managing){reply(res,409,{error:'A library operation is in progress. Please wait.'});return;}
+ }
+ if(url.pathname==='/api/reddit-search'&&req.method==='GET'){
+ lastSeen=Date.now();reply(res,200,await redditSearch.status());return;
+ }
+ if(url.pathname==='/api/reddit-search'&&req.method==='POST'){
+ if(job?.state==='running'){reply(res,409,{error:'Wait for generation to finish before changing search settings.'});return;}
+ lastSeen=Date.now();reply(res,200,await redditSearch.configure(await body(req)));return;
  }
  if(url.pathname==='/api/mobile'&&req.method==='GET'){
  lastSeen=Date.now();reply(res,200,await mobile.status());return;

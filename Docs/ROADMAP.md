@@ -12,7 +12,7 @@ Rows marked Implemented describe available features; the remaining rows are prop
 | In progress · not complete | Mobile access | App-side private Tailscale HTTPS and pairing are built. Installation is waiting for Windows administrator approval; account/device setup and phone testing remain | Resume at the home PC: approve installation, sign in on PC/phone, enable HTTPS, pair, and verify cellular access |
 | Optional | Expansion | Project-folder exports, model comparisons, creative reference boards | Expand access or depth while preserving intentional generation |
 
-Reddit expansion is requested but awaiting Reddit API approval and credentials. It is not active. See [access request and implementation plan](REDDIT-ACCESS.md); retention/deletion handling must be resolved before saving Reddit-backed concepts.
+Reddit search-provider integration is implemented and awaiting the owner's free Tavily API key for activation/live testing. It uses indexed search snippets, not direct Reddit API access or full-thread collection. See [setup and limitations](REDDIT-ACCESS.md). Direct Reddit API integration is deferred.
 
 Suggested next feature release: tags and status, clearer evidence, and stronger Codex kits with acceptance criteria.
 

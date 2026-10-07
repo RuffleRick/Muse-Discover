@@ -39,7 +39,7 @@ The interface uses Forest Room's centered layout with Midnight's slate blue pale
 
 Muse uses the installed Ollama runtime and `qwen3.5:4b`. It starts the model only for an explicit roll or variation request, then stops its owned model process tree. Idea research and generation remain manual, with no paid cloud fallback. Muse has no daily resource searches or scheduled generation.
 
-Source collection currently uses Hacker News and Stack Exchange. Reddit is not connected. Public discussions inspire ideas; they do not prove novelty, demand, or low competition.
+Source collection uses Hacker News and Stack Exchange, with optional Reddit links and search snippets through Tavily. Open **Library tools → Reddit search snippets**, create a free Tavily account, enter its API key in Muse, confirm that paid usage is disabled, and save. Muse performs one basic search per uncached fresh roll, capped at 900 attempts per UTC calendar month. Variations reuse saved sources. Your topic is sent to Tavily; full Reddit threads are not fetched. The private key is excluded from library exports/backups and Git. See [Reddit search setup](Docs/REDDIT-ACCESS.md). Public discussions and snippets inspire ideas; they do not prove novelty, demand, or low competition.
 
 The local app and hosted site have separate libraries. The hosted site is not updated by editing or starting this local project.
 

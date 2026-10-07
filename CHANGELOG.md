@@ -1,5 +1,9 @@
 # Changelog
 
+## October 7, 2026
+
+- Added optional Tavily free-plan Reddit search snippets to manual fresh rolls, with desktop Library tools connection/disable/remove controls, private API-key storage, persistent 900-attempt monthly cap, backoff, and existing-source fallback. Snippets retain their evidence limits in prompts, detail views, Codex kits, exports/imports, and backups; they do not establish detected needs or repetition. Full Reddit threads are not fetched. Connection and live provider/model testing await the owner's free-plan key.
+
 ## October 6, 2026
 
 - Created the private brainstorming experience and Codex kit workflow.

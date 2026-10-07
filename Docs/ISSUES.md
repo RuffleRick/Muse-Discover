@@ -2,7 +2,7 @@
 
 ## Current limitations
 
-- Reddit is not connected; current public collection uses Hacker News and Stack Exchange.
+- Reddit search snippets through Tavily are implemented but need the owner's free-plan API key for activation and live testing. Full Reddit threads are not collected. Snippets may be stale or truncated and do not establish need signals or repeated demand. The local 900-attempt meter does not cover other apps on the same provider account or verify its billing settings.
 - Local and hosted libraries do not sync.
 - Remote/mobile access is in progress, not complete. App-side Tailscale HTTPS and pairing are built, but installation is waiting for Windows administrator approval. PC/phone sign-in, HTTPS enablement, pairing, and a physical phone/cellular test remain. Resume when the user is at the home PC. Direct LAN/public access is not enabled.
 - Codex kits use a fixed template. They do not independently verify feasibility or market demand.

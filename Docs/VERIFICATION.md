@@ -1,5 +1,11 @@
 # Verification notes
 
+## Reddit search-provider integration — October 7, 2026
+
+- All 40 regression checks passed, including nine new mocked search tests. Syntax checks passed for all local `.mjs` files and the browser app script; `git diff --check` passed. An existing collection test was updated for the new versioned cache key. Initial sandbox disk tests hit permission errors on atomic rename; the same tests passed with normal filesystem access.
+- Localhost smoke checks found the key/connection controls in served HTML, disabled/unconfigured status with zero attempts, no credential in status, rejected wrong-Origin requests, and rejected enabling without required setup. The private library's SHA-256 hash was unchanged. No real provider request or local model generation was run.
+- Browser visual testing was unavailable: the browser tool reported no connected browsers. Live Tavily results and real-model snippet use remain unverified until a valid free-plan key is connected and an explicit roll is requested.
+
 ## Previously verified
 
 - Manual rolls and pinned-idea branching successfully generated concepts locally.

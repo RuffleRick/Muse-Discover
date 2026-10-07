@@ -1,30 +1,33 @@
-# Reddit source expansion — awaiting approval
+# Reddit search snippets through Tavily
 
-Status: requested, not connected. The owner does not yet have Reddit API approval or credentials. Muse continues to collect Stack Exchange questions and Hacker News comments. No Reddit collector or authentication code has been added, and no Reddit data has been fetched for Muse.
+The requested search-provider route replaces the previous Reddit API request plan. The integration is built; it remains off until a free Tavily API key is saved in Muse. No Reddit access request was submitted. Direct Reddit API access and full-thread collection are deferred.
 
-## Access request
+## Connect once
 
-Reddit currently requires explicit approval before API access, including personal developer applications. Its policy directs developers to Devvit first and provides a request route for applications that Devvit does not support. Approval must cover the actual use, including passing excerpts to a local model for inference. Approval and free access are not guaranteed; Muse must not enable paid access without separate authorization.
+1. Create a free **Researcher** account at [Tavily](https://app.tavily.com). Its [current pricing](https://www.tavily.com/pricing) offers 1,000 monthly credits with no credit card required. Keep paid usage disabled; do not enable pay-as-you-go.
+2. Copy an API key from the Tavily dashboard.
+3. Open Muse on the home PC and expand **Library tools → Reddit search snippets**.
+4. Paste the key into the password field, confirm you use the free plan with paid usage disabled, and choose **Save key and enable**. Never paste the key into chat or GitHub.
+5. Enter a topic and choose **Roll fresh ideas**. Relevant Reddit search snippets join the existing Hacker News/Stack Exchange source pool. The app retains at most six source excerpts, so it does not include every search result.
 
-[Official developer access request](https://support.reddithelp.com/hc/en-us/requests/new?tf_42139884615700=api_request_type_developer_clone&ticket_form_id=14868593862164)
+Saving the key does not validate it with Tavily or run a search. A rejected key is reported on the next explicit roll; existing sources remain usable. Disable pauses future searches without deleting the key; Remove key deletes the saved key. Both preserve the library and pins. Administrative connection controls are desktop-only; paired phones can use configured searches through ordinary rolls.
 
-The following is a draft for the owner to review and submit, not a submitted application or an assertion that the proposed use is eligible:
+## Usage and privacy
 
-> I am developing Muse, a personal local brainstorming application for one user. I request permission for bounded, read-only searches of public posts and comments about games, hobbies, everyday workflows, and software tools. Searches would run only when I explicitly request new ideas or variations. Relevant excerpts would be checked for complaints, wishes, cumbersome workarounds, and similar needs across discussions, then passed to a locally running Ollama model to suggest small app or tool prototypes. This is inference, not model training or fine-tuning. No Reddit content would be sent to a paid cloud model. The application would not post, vote, message, or access private communities. I may use generated ideas to build future projects; please clarify any commercial-use restrictions. The application source is public at https://github.com/RuffleRick/Muse-Discover, while my personal library is private. The requested capability is an external desktop workflow using a local model rather than an app running inside Reddit. Please advise whether this is supported through Devvit or requires approved Data API access, which communities and limits are permitted, and how deletion requirements apply to saved ideas, citations, exports, and backups. The Reddit integration is not implemented or active yet. I require a no-cost access option and would not activate a paid arrangement.
+Muse calls only `https://api.tavily.com/search`, using `site:reddit.com` plus your topic and a Reddit domain restriction. Basic search costs one credit under [Tavily's documented search pricing](https://docs.tavily.com/documentation/api-reference/endpoint/search). Raw page content, provider-generated answers, images, automatic parameter upgrades, redirects, and retries are disabled. Muse itself does not fetch Reddit pages, comments, or the Reddit API.
 
-Supply the actual Reddit username and any requested community scope directly to Reddit. Do not put credentials or application responses containing personal information into the public repository. No application has been submitted on the owner's behalf.
+One provider request runs per uncached fresh roll, only when enabled. The source cache lasts ten minutes; repeated same-topic rolls may reuse results without another search credit. Variations reuse their saved sources. There is no background scanning or scheduled generation. Ollama remains local and starts/stops under the existing explicit-generation rules.
 
-## Intended implementation after approval
+Muse reserves and persists each attempt before sending it and stops at **900 attempts per UTC calendar month**. Failed calls count conservatively. Restart, disabling, removing/replacing a key, and restoring a library do not reset this meter. Provider rate limits and allowance errors pause Reddit search while other sources continue. This meter covers this Muse installation, not all apps on the Tavily account. The app cannot verify the account's billing plan; staying on the provider's free plan with paid usage disabled is required for no charges. Never delete the meter file to reset usage.
 
-1. Use approved OAuth access and a truthful application User-Agent, with credentials stored only in private local configuration. Expose connection status without revealing tokens.
-2. Search only the approved communities and endpoints on an explicit roll or variation request. Bound searches and comment retrieval; honor rate-limit headers, backoff, and timeouts. Reddit failure should leave existing sources usable and report incomplete coverage.
-3. Normalize public posts/comments into the existing source pipeline. Preserve thread identity for grouping; apply topic relevance, detailed-excerpt filtering, literal need signals, duplicate removal, and the six-source context limit. A popular post alone is not evidence of an unmet need.
-4. Resolve retention before saving Reddit-backed ideas. Current Muse caches, pins, research snapshots, Codex kits, exports, and backups can retain source text indefinitely. This behavior cannot simply be reused for Reddit. Define and implement deletion handling across all those surfaces, including account identifiers and any saved derived material covered by the approved terms. A short cache alone does not resolve copies retained in pins or backups. Do not introduce background research or inference to solve retention.
-5. Test mocked authentication expiry, rate limits, unavailable/deleted content, deletion propagation, provenance, relevance, and preservation of non-Reddit pins. Conduct an approved live search only after credentials and scope are configured; separately verify an explicit local generation and model shutdown.
+The topic goes to Tavily, whose own [terms](https://www.tavily.com/terms) govern its processing. Muse does not send your pins, notes, Codex kits, or private library to Tavily. Generated ideas and inference stay on the home PC. `local-muse/data/reddit-search.json` stores the key as private local JSON, not encrypted. It is excluded from Git, portable library exports, and library backups; it can follow your existing OneDrive folder synchronization settings. Provider response bodies and keys are not printed in errors or exposed by the status endpoint.
 
-## Requirements checked October 7, 2026
+## Evidence limits
 
-- [Responsible Builder Policy](https://support.reddithelp.com/hc/en-us/articles/42728983564564-Responsible-Builder-Policy): approval, transparency, scope, and prohibited uses.
-- [Data API Wiki](https://support.reddithelp.com/hc/en-us/articles/16160319875092-Reddit-Data-API-Wiki): OAuth, User-Agent, rate limits, and removal of deleted content and author information. Its 48-hour purge recommendation does not authorize retaining deleted content until that deadline.
+Each result is labeled **Reddit · Tavily search snippet**. It includes a canonical discussion link and at most 1,200 characters of search-provider content. Search chunks may be truncated, assembled from multiple parts of a page, or stale. Muse cannot establish which author said a snippet, whether the thread remains available, or how representative the results are.
 
-Recheck current terms and the specific approval before implementation. No anonymous scraping, alternate endpoints, or third-party proxies are planned as an access workaround.
+Snippets can inspire an idea, but they do not enter Muse's detected complaint/wish/workaround signals or repeated-need counts. Model prompts and Codex kits explicitly explain this distinction. Open the links and check context before building around a claimed need. Provider access does not itself establish permission for every downstream use of third-party content; this feature is not a direct Reddit scraping workaround or a claim of complete Reddit coverage.
+
+## Verification status
+
+Mocked tests cover configuration and secret redaction, query settings, URL filtering and thread deduplication, persistent quota and concurrency, month rollover, provider backoff/exhaustion, corrupt settings, cache invalidation, snippet evidence metadata through imports/kits/prompts, and fallback to existing sources. Live Tavily searching and resulting local model output remain unverified until the owner connects a valid free-plan key and requests a roll.

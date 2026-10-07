@@ -76,7 +76,7 @@ function openIdea(id){
  selected=find(id);if(!selected)return;
  const i=selected;
  $('detailCategory').textContent=i.category+' · Generated '+new Date(i.generatedAt).toLocaleDateString();
- $('detailBody').innerHTML='<h2>'+esc(i.name)+'</h2><p>'+esc(i.pitch)+'</p><h3>The twist</h3><p>'+esc(i.twist)+'</p><h3>Who it’s for</h3><p>'+esc(i.audience)+'</p><h3>The first useful version</h3><ul>'+i.features.map(f=>'<li>'+esc(f)+'</li>').join('')+'</ul>'+(i.reasoning?'<section class="source"><h3>How this could work</h3><p><strong>Inputs:</strong> '+esc(i.reasoning.inputs.join('; '))+'</p><p>'+esc(i.reasoning.workflow)+'</p><p><strong>Limits:</strong> '+esc(i.reasoning.limitations)+'</p><p><strong>Discussion excerpt:</strong> '+esc(i.reasoning.sourceQuote)+'</p></section>':'')+explorationPanel(i)+'<div class="actions"><button id="branch" class="primary" '+(busy?'disabled':'')+'>Explore new variations</button><button id="detailPin" class="secondary">'+(isPinned(i.id)?'Unpin idea':'Pin for later')+'</button></div><h3>What inspired this</h3><p>'+esc(i.evidence)+'</p>'+i.sources.map(s=>'<div class="source"><a href="'+esc(s.url)+'" target="_blank" rel="noopener noreferrer">'+esc(s.title)+'</a><p>'+esc(s.excerpt)+'</p><small>'+esc(s.site)+' · '+esc(s.author)+' · fetched '+new Date(s.retrievedAt).toLocaleDateString()+(s.license?' · '+esc(s.license):'')+'</small></div>').join('')+researchPanel(i)+'<h3>Validate before building</h3><p>'+esc(i.validation)+'</p><h3>Your Codex starting point</h3><div class="kit-settings"><label for="platform">Build as</label><select id="platform"><option value="web app">Web app</option><option value="desktop tool">Desktop tool</option><option value="Unity game prototype">Unity game prototype</option></select><label for="note">Your direction</label><textarea id="note" maxlength="2000" placeholder="Focus, style, features, or constraints…">'+esc(data.pins.find(p=>p.idea.id===i.id)?.note||'')+'</textarea></div><div class="actions"><button id="saveNote" class="secondary">Pin idea and notes</button><button id="makeKit" class="secondary">Create Codex kit</button></div><section id="kit"></section>';
+ $('detailBody').innerHTML='<h2>'+esc(i.name)+'</h2><p>'+esc(i.pitch)+'</p><h3>The twist</h3><p>'+esc(i.twist)+'</p><h3>Who it’s for</h3><p>'+esc(i.audience)+'</p><h3>The first useful version</h3><ul>'+i.features.map(f=>'<li>'+esc(f)+'</li>').join('')+'</ul>'+(i.reasoning?'<section class="source"><h3>How this could work</h3><p><strong>Inputs:</strong> '+esc(i.reasoning.inputs.join('; '))+'</p><p>'+esc(i.reasoning.workflow)+'</p><p><strong>Limits:</strong> '+esc(i.reasoning.limitations)+'</p><p><strong>Discussion excerpt:</strong> '+esc(i.reasoning.sourceQuote)+'</p></section>':'')+explorationPanel(i)+'<div class="actions"><button id="branch" class="primary" '+(busy?'disabled':'')+'>Explore new variations</button><button id="detailPin" class="secondary">'+(isPinned(i.id)?'Unpin idea':'Pin for later')+'</button></div><h3>What inspired this</h3><p>'+esc(i.evidence)+'</p>'+i.sources.map(s=>'<div class="source"><a href="'+esc(s.url)+'" target="_blank" rel="noopener noreferrer">'+esc(s.title)+'</a><p>'+esc(s.excerpt)+'</p><small>'+esc(s.site)+(s.kind==='search-snippet'||s.id.startsWith('reddit-search-')?' · snippet only · full thread not checked':'')+' · '+esc(s.author)+' · fetched '+new Date(s.retrievedAt).toLocaleDateString()+(s.license?' · '+esc(s.license):'')+'</small></div>').join('')+researchPanel(i)+'<h3>Validate before building</h3><p>'+esc(i.validation)+'</p><h3>Your Codex starting point</h3><div class="kit-settings"><label for="platform">Build as</label><select id="platform"><option value="web app">Web app</option><option value="desktop tool">Desktop tool</option><option value="Unity game prototype">Unity game prototype</option></select><label for="note">Your direction</label><textarea id="note" maxlength="2000" placeholder="Focus, style, features, or constraints…">'+esc(data.pins.find(p=>p.idea.id===i.id)?.note||'')+'</textarea></div><div class="actions"><button id="saveNote" class="secondary">Pin idea and notes</button><button id="makeKit" class="secondary">Create Codex kit</button></div><section id="kit"></section>';
  if(i.exploration){for(const [id,key] of [['keepDirection','keep'],['branchConstraints','constraints'],['branchAudience','audience'],['branchCreativity','creativity'],['combineIdea','combineId']])$(id).value=i.exploration[key]|| (key==='creativity'?'balanced':'');}
  $('branch').onclick=()=>{if(busy||stopped)return;const settings={keep:$('keepDirection').value,change:$('changeDirection').value,constraints:$('branchConstraints').value,audience:$('branchAudience').value,creativity:$('branchCreativity').value,combineId:$('combineIdea').value};$('detail').close();void generate(i.id,settings);};
  $('detailBody').onclick=e=>{const node=e.target.closest('[data-tree-open]');if(node){$('detail').close();openIdea(node.dataset.treeOpen);}};
@@ -118,7 +118,7 @@ async function libraryOperation(route,payload,message,changes=true){
  try{await api(route,payload);if(changes){board=[];view='library';$('libraryQuery').value='';$('detail').close();await load();}await refreshBackups();toolsStatus(message);status(message);}
  catch(e){toolsStatus(e.message);}finally{toolsBusy=false;syncTools();}
 }
-$('libraryTools').addEventListener('toggle',()=>{if($('libraryTools').open){void refreshBackups();if(!phone)void refreshMobile();}});
+$('libraryTools').addEventListener('toggle',()=>{if($('libraryTools').open){void refreshBackups();if(!phone){void refreshMobile();void refreshRedditSearch();}}});
 $('backupChoice').onchange=syncTools;
 $('exportLibrary').onclick=async()=>{if(busy||stopped||toolsBusy)return;toolsBusy=true;syncTools();try{const library=await api('/api/library/export');download('muse-library-'+new Date().toISOString().replace(/[:.]/g,'-')+'.json',JSON.stringify(library,null,2),'application/json');toolsStatus('Library export downloaded. Keep it somewhere safe.');}catch(e){toolsStatus(e.message);}finally{toolsBusy=false;syncTools();}};
 $('importLibrary').onclick=()=>{if(!busy&&!stopped&&!toolsBusy)$('importFile').click();};
@@ -140,7 +140,22 @@ async function changeMobile(action){if(mobileBusy||stopped)return;mobileBusy=tru
 $('enableMobile').onclick=()=>void changeMobile('enable');
 $('disableMobile').onclick=()=>void changeMobile('disable');
 $('refreshMobile').onclick=()=>void refreshMobile();
-if(phone){$('mobileTools').hidden=true;$('stop').textContent='Disconnect phone';$('privacyNote').textContent='Private on your home PC · generation only when requested';}
+if(phone){$('mobileTools').hidden=true;$('redditSearchTools').hidden=true;$('stop').textContent='Disconnect phone';$('privacyNote').textContent='Private on your home PC · generation only when requested';}
+
+let redditSearchBusy=false;
+function showRedditSearch(d){$('redditSearchStatus').textContent=(d.enabled?'Enabled':d.configured?'Disabled · key saved':'Not connected')+' · '+d.used+' / '+d.limit+' Muse search attempts in '+d.month+(d.paused?' · paused by usage limit or provider backoff':'')+'. No full Reddit threads are fetched.';}
+async function refreshRedditSearch(){try{showRedditSearch(await api('/api/reddit-search'));}catch(e){$('redditSearchStatus').textContent=e.message;}}
+async function configureRedditSearch(input){
+ if(redditSearchBusy||busy||stopped)return;redditSearchBusy=true;
+ for(const id of ['connectRedditSearch','disableRedditSearch','removeRedditKey'])$(id).disabled=true;
+ $('redditSearchStatus').textContent='Saving search settings…';
+ try{showRedditSearch(await api('/api/reddit-search',input));}
+ catch(e){$('redditSearchStatus').textContent=e.message;}
+ finally{$('tavilyKey').value='';redditSearchBusy=false;for(const id of ['connectRedditSearch','disableRedditSearch','removeRedditKey'])$(id).disabled=stopped;}
+}
+$('connectRedditSearch').onclick=()=>void configureRedditSearch({key:$('tavilyKey').value,enabled:true,freePlanConfirmed:$('tavilyFreePlan').checked});
+$('disableRedditSearch').onclick=()=>void configureRedditSearch({enabled:false});
+$('removeRedditKey').onclick=()=>void configureRedditSearch({remove:true});
 
 
 function researchPanel(idea){

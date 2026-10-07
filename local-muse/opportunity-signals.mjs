@@ -1,4 +1,5 @@
 import {words,selectSources,sourceScore} from './research-quality.mjs';
+import {isSearchSnippet} from './reddit-search.mjs';
 const patterns={
  request:/\b(?:i wish|we wish|wish there (?:was|were)|if only|i(?:'m| am) looking for|we(?:'re| are) looking for|is there (?:an?|any) (?:app|tool|software|way)|(?:i|we) (?:need|want) (?:an?|some|better|simpler|a simple)\b|would (?:love|like) (?:an?|to)|there should be|feature request|missing (?:a |the )?feature)\b/i,
  complaint:/\b(?:frustrat\w*|annoy\w*|tedious|cumbersome|time.consuming|takes? too long|too complicated|too difficult|hard to|difficult to|struggl\w* (?:to|with)|pain point|a pain to|tired of|can(?:not|'t) (?:find|keep|track|manage|organize)|does(?:n't| not) (?:let|allow|support)|wastes? (?:my |our )?time)\b/i,
@@ -11,6 +12,7 @@ function needWords(quote,topic){const topical=new Set(words(topic));return words
 function isNegated(sentence,index){return /\b(?:not|never|no longer|isn't|aren't|wasn't)\s+(?:\w+\s+){0,2}$/.test(sentence.slice(Math.max(0,index-45),index).toLowerCase());}
 function activeMatch(pattern,text){const match=pattern.exec(text);return !!match&&!isNegated(text,match.index);}
 export function detectSignals(source,topic=''){
+ if(isSearchSnippet(source))return []; // Search chunks lack verified thread/author context.
  const excerpt=String(source.excerpt||'').slice(0,16000),signals=[];
  const topical=words(topic),bodyWords=words(excerpt);
  if(topical.length&&!topical.some(t=>bodyWords.some(w=>w===t||w===t+'s'||t===w+'s')))return signals;
@@ -67,6 +69,8 @@ export function selectOpportunitySources(sources,topic,max=6){
   if(!picked.some(p=>discussion(p)===discussion(s)||author(p)===author(s)))add(s);
   if(picked.length>=3)break;
  }
+ // Include one relevant snippet when available, after preserving repeated-need examples.
+ add(ranked.find(isSearchSnippet));
  for(const s of ranked)add(s);
  return {sources:picked,research:researchSummary(picked,topic)};
 }

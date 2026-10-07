@@ -4,6 +4,7 @@ import {randomUUID} from 'node:crypto';
 import {categories} from './core.mjs';
 import {explorationOptions} from './exploration.mjs';
 import {researchSummary} from './opportunity-signals.mjs';
+import {isSearchSnippet} from './reddit-search.mjs';
 export const MAX_IMPORT_BYTES=20*1024*1024;
 function string(v,key,max=2000){if(typeof v!=='string'||v.length>max)throw Error('Invalid or oversized '+key+'.');return v;}
 function id(v,key){const s=string(v,key,100);if(!s.trim())throw Error('Missing '+key+'.');return s;}
@@ -13,6 +14,7 @@ function source(s){
  if(!['http:','https:'].includes(u.protocol)||u.username||u.password)throw Error('Unsafe source URL.');
  const out={id:id(s.id,'source ID'),url,title:string(s.title,'source title'),excerpt:string(s.excerpt||'','source excerpt',16000)};
  for(const key of ['site','author','authorId','discussionId','retrievedAt','license'])if(s[key]!==undefined)out[key]=string(s[key],key);
+ if(isSearchSnippet(s)){out.kind='search-snippet';out.provider='Tavily';delete out.authorId;out.author='';}
  return out;
 }
 function idea(i){

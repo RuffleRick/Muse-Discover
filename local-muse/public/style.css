@@ -14,3 +14,5 @@ dialog{border:1px solid var(--border);border-radius:12px;width:min(740px,94vw);m
 
 .pairing-page{max-width:520px;margin:8vh auto;padding:24px}.pairing-page h1{font-size:42px}.pairing-page p{color:var(--muted);line-height:1.8}.pairing-page form{display:flex;flex-direction:column;gap:12px}.pairing-page #code{font-size:22px;letter-spacing:3px;text-transform:uppercase}.pair-code{display:block;color:var(--text);font-size:18px;letter-spacing:2px;overflow-wrap:anywhere}#mobileStatus a,.tools-panel a{color:var(--accent);overflow-wrap:anywhere}.tools-panel [hidden]{display:none}
 .research-signals summary{cursor:pointer;color:var(--accent);line-height:1.7}.research-signals p{margin-top:14px}
+ .free-plan-confirm{display:flex;align-items:center;gap:.6rem;margin:1rem 0}
+ .free-plan-confirm input{width:auto;flex:none}
