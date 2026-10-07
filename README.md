@@ -15,6 +15,7 @@ This folder is the main Muse project:
 - Explore three variations of a selected or pinned concept.
 - Browse and shuffle saved concepts without generation.
 - Search Saved library and Pinned instantly by names, descriptions, features, source text, or personal notes. Multiple words can match different parts of an idea; use Clear to reset.
+- Explore an idea with keep/change instructions, constraints, audience adaptation, creativity levels, and combinations. Revisit saved branches in its idea tree.
 - The collapsible Learning sidebar automatically searches developer communities once daily while Muse is open and shows up to five learning links. Saved results remain available offline without starting the model.
 - Pin ideas and save personal notes.
 - Create, copy, or download a Codex opening prompt and build workflow.

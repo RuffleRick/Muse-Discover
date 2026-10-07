@@ -5,6 +5,7 @@ import {randomUUID} from 'node:crypto';
 import {ROOT,DATA,load,save,text,categories,collect,makeKit} from './core.mjs';
 import {generate,stopModel,model} from './engine.mjs';
 import {getResources,refreshResources} from './resource-feed.mjs';
+import {explorationOptions} from './exploration.mjs';
 const port=3008;
 const origin='http://127.0.0.1:'+port;
 await mkdir(DATA,{recursive:true});
@@ -20,11 +21,16 @@ async function body(req){
 }
 async function runJob(input){
  try{
- let sourceSet,parent;
+ let sourceSet,parent,combined;
  if(input.parentId){
  parent=state.ideas.find(i=>i.id===input.parentId)||state.pins.find(p=>p.idea.id===input.parentId)?.idea;
  if(!parent)throw Error('The selected concept is no longer available.');
+ if(input.exploration.combineId){
+ combined=state.ideas.find(i=>i.id===input.exploration.combineId)||state.pins.find(p=>p.idea.id===input.exploration.combineId)?.idea;
+ if(!combined||combined.id===parent.id)throw Error('Choose another saved idea to combine.');
+ }
  sourceSet={category:parent.category,term:parent.name,sources:parent.sources,warnings:[]};
+ if(combined)sourceSet.sources=[...new Map([...parent.sources,...combined.sources].map(s=>[s.id,s])).values()];
  }else{
  job.message='Finding public discussions…';
  sourceSet=await collect(state,input.category,input.query);
@@ -32,7 +38,7 @@ async function runJob(input){
  }
  if(closing)throw Error('Muse is shutting down.');
  job.sources=sourceSet.sources.length;
- const ideas=await generate(sourceSet,parent,state.ideas,message=>job.message=message);
+ const ideas=await generate(sourceSet,parent,state.ideas,message=>job.message=message,input.exploration,combined);
  if(closing)throw Error('Muse is shutting down.');
  state.ideas.push(...ideas);
  if(state.ideas.length>5000)state.ideas=state.ideas.slice(-5000);
@@ -66,6 +72,7 @@ const server=http.createServer(async(req,res)=>{
  const input=await body(req);
  input.category=categories.includes(input.category)?input.category:'Everything';
  input.query=text(input.query,120);input.parentId=text(input.parentId,100);
+ input.exploration=explorationOptions(input.exploration);
  lastSeen=Date.now();job={id:randomUUID(),state:'running',message:'Starting…',startedAt:Date.now()};
  reply(res,202,{job});void runJob(input);return;
  }

@@ -13,3 +13,5 @@
 - Added a collapsible Codex learning sidebar with manually refreshed official article/tutorial/video indexes, daily rotating picks, type filters, offline cache, and a practical learning prompt. No background scanning or model inference is used.
 
 - Simplified Learning to five automatically discovered daily links from DEV Community and Hacker News-linked sources, removed feed filters and manual refresh controls, and kept daily results cached without model inference or a background scheduler.
+
+- Added guided brainstorming with keep/change direction, constraints, audience adaptation, three creativity levels, saved-idea combinations, persistent branch settings, a navigable family tree, and exploration direction in Codex kits.

@@ -50,3 +50,12 @@ Keep future check results specific: record what ran, its outcome, and remaining 
 - A repeated same-day request reused the refresh timestamp; the model service remained stopped.
 - An integration check confirmed the idea library was unchanged by resource refresh.
 - Date rollover is implemented through the open-tab heartbeat and covered by calendar-date unit checks; a real overnight session was not run.
+
+## Deeper brainstorming — October 6, 2026
+
+- Seven tests passed across exploration and daily resources; exploration tests cover bounded settings, valid creativity values, prompt direction, combinations, parent/family preservation, source references, duplicate-content rejection, and constraints carried into Codex kits.
+- Browser, engine, and server syntax checks passed.
+- One live guided combination generated three concepts in 13.7 seconds; the library increased from 74 to 77 while all four pins were retained. The model service stopped afterward.
+- Reopening after a server restart retained branch direction, combination reference, and all 13 paths in the tested family, including older variations.
+- Browser checks verified tree navigation back to the original concept, prefilled inherited keep/constraints/audience/creativity/combination controls, and recorded constraints in a Codex kit.
+- The live model output did not consistently honor the requested audience and read-only constraint. Guidance is visible for review. The final system prompt was strengthened after this observation; its quality improvement has not been established with another live run.

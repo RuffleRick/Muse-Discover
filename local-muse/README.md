@@ -21,3 +21,7 @@ The Node runtime uses the existing Codex runtime on this PC, with a PATH Node fa
 
 Troubleshooting: see data/server-errors.log and data/model.log. Reopen Start Muse.cmd if the app has stopped. No fallback switches to a paid/cloud service.
 
+
+## Deeper brainstorming
+
+Open any idea, fill in **Keep this**, **Change that**, optional constraints and audience, choose **Focused**, **Balanced**, or **Wild**, and optionally combine it with another saved idea. Click **Explore three new variations** to run the local model. New concepts keep the original family and save the direction used. The **Idea tree** opens older and new paths without generation; each can be pinned or explored further. Existing saved variations also appear. Combination references connect the second idea without moving its original tree. Generated directions guide the model rather than guaranteeing compliance, so review the output. Codex kits carry forward recorded constraints.

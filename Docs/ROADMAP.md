@@ -1,11 +1,11 @@
 # Optional roadmap
 
-These are proposals, not implemented features or scheduled work. Keep idea generation manual, private, and local by default.
+Rows marked Implemented describe available features; the remaining rows are proposals, not scheduled work. Keep idea generation manual, private, and local by default.
 
 | Priority | Direction | Proposed features | Completion target |
 | --- | --- | --- | --- |
 | First | Reliable library | Export/import, backup restoration, tags, collections, project status, cancellation, separate research/model timings | Find and restore ideas without losing notes or relationships |
-| Next | Deeper brainstorming | Keep-this/change-that variations, constraints, creativity controls, combinations, audience adaptations, idea tree | Explore and revisit genuinely different paths |
+| Implemented · first version | Deeper brainstorming | Keep/change instructions, constraints, three creativity levels, saved-idea combinations, audience adaptations, navigable idea tree, recorded branch directions | Explore and revisit different paths; model instruction-following still requires review |
 | Next | Stronger research | User-supplied links, more public sources, Reddit access evaluation, recurring-problem grouping, evidence snapshots | Explain which observations support an idea and which claims remain uncertain |
 | Later | Choosing projects | Shortlist comparisons, smallest useful version, assumption checks, competitor research, validation experiments | Each shortlisted project has a manageable prototype and a concrete value test |
 | Later | Codex practice | Guided briefs, acceptance criteria, prompt refinement, debugging exercises, Git practice, project retrospectives | Complete prototypes and record reusable lessons |

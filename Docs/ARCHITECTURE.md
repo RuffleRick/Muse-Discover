@@ -14,6 +14,10 @@
 
 `resource-feed.mjs` searches DEV Community’s Codex-tag article API and the Hacker News Algolia story index on `POST /api/resources/refresh`. The browser requests it automatically on opening and after local date rollover while a tab remains open. `GET /api/resources` reads only the local cache. A versioned cache records each calendar day’s attempt, including failure, and concurrent refreshes share one request. The selector deduplicates URLs, prefers unseen links using a bounded 100-URL history, favors varied publishers, and returns up to five results. Title filters require both Codex development context and learning/workflow context. Requests have timeout and size limits and reject redirects. Public HTTPS result links are validated and titles are escaped; destination pages are not fetched automatically. No model, scheduler, or paid API is involved. The sidebar’s collapse preference remains in browser storage.
 
+## Guided exploration
+
+`exploration.mjs` bounds and normalizes branch directions and supplies keep/change, constraints, audience, creativity, and optional combination context to the model. Creativity adjusts the generation temperature. Combined concepts contribute their collected source IDs; sources remain bounded by the existing structured output schema. New branches retain `parentId` and `family`, record exploration settings, and link the combined idea using `relatedIdeaIds`. Exact repeated pitch/twist pairs are rejected; semantic originality and constraint compliance are not guaranteed. Existing ideas need no migration. The browser builds a cycle-safe family tree from saved ideas and pins and allows opening any retained branch. Codex kits include the recorded branch constraints and direction.
+
 ## Data
 
 `data/library.json` stores ideas, pins, notes, source cache, and source backoff state. Writes are queued and saved through a temporary file plus rename. Logs are diagnostic files in the same directory. Personal state and logs are excluded from Git.
