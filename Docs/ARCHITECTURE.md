@@ -12,11 +12,15 @@
 
 `public/index.html`, `public/style.css`, and `public/app.js` contain the interface. Theme changes preserve the DOM IDs used by the existing browser behavior.
 
+`resource-feed.mjs` reads three official OpenAI Markdown indexes only on `POST /api/resources/refresh`. `GET /api/resources` loads a local cache or verified starter links without network access. Successful checks are reused for the local calendar day; simultaneous refreshes share one request and failed attempts have a short cooldown. Requests have time and size limits, redirects are rejected, and outgoing resource links are restricted to official learning pages or valid YouTube watch links. Titles are escaped by the browser renderer. Daily rotation provides up to three links per type without claiming publication dates. The sidebar can be collapsed, and its visibility preference is stored in the browser.
+
 ## Data
 
 `data/library.json` stores ideas, pins, notes, source cache, and source backoff state. Writes are queued and saved through a temporary file plus rename. Logs are diagnostic files in the same directory. Personal state and logs are excluded from Git.
 
 The external Ollama installation and model files remain in their existing user locations. They are not copied into this project or reinstalled during project consolidation.
+
+`data/resources.json` stores the learning catalog and refresh metadata. It uses an atomic temporary-file rename and is excluded from Git along with the rest of `data/`. It does not modify the idea library.
 
 ## Hosted source
 

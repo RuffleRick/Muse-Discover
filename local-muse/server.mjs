@@ -4,6 +4,7 @@ import path from 'node:path';
 import {randomUUID} from 'node:crypto';
 import {ROOT,DATA,load,save,text,categories,collect,makeKit} from './core.mjs';
 import {generate,stopModel,model} from './engine.mjs';
+import {getResources,refreshResources} from './resource-feed.mjs';
 const port=3008;
 const origin='http://127.0.0.1:'+port;
 await mkdir(DATA,{recursive:true});
@@ -53,6 +54,12 @@ const server=http.createServer(async(req,res)=>{
  if(url.pathname==='/api/state'&&req.method==='GET'){
  lastSeen=Date.now();
  reply(res,200,{ideas:state.ideas,pins:state.pins,categories,model,job,mode:'local-on-demand'});return;
+ }
+ if(url.pathname==='/api/resources'&&req.method==='GET'){
+ reply(res,200,await getResources());return;
+ }
+ if(url.pathname==='/api/resources/refresh'&&req.method==='POST'){
+ await body(req);lastSeen=Date.now();reply(res,200,await refreshResources());return;
  }
  if(url.pathname==='/api/generate'&&req.method==='POST'){
  if(job?.state==='running'){reply(res,409,{error:'A generation is already in progress.'});return;}

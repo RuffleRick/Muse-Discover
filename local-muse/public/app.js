@@ -83,5 +83,23 @@ $('close').onclick=()=>$('detail').close();
 $('detail').onclick=e=>{if(e.target===$('detail')){const r=$('detail').getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)$('detail').close();}};
 $('stop').onclick=async()=>{try{await api('/api/stop',{});}finally{stopped=true;clearInterval(poll);clearInterval(heartbeat);setBusy(false);$('detail').close();$('roll').disabled=true;$('stop').disabled=true;$('modelStatus').textContent='Muse stopped';status('Muse is stopped. Your library and pins are saved. Reopen with Start Muse.cmd.');}};
 const heartbeat=setInterval(()=>{if(!busy&&!stopped)api('/api/status').catch(()=>{});},20000);
+let resources=null,resourcesBusy=false;
+function renderResources(){
+ const type=$('resourceType').value;
+ const list=(resources?.items||[]).filter(i=>type==='All'||i.kind===type);
+ $('resourceList').innerHTML=list.map(i=>'<article class="resource"><span class="resource-kind">'+esc(i.kind)+'</span><a href="'+esc(i.url)+'" target="_blank" rel="noopener noreferrer">'+esc(i.title)+' <span aria-hidden="true">↗</span></a><span class="resource-source">OpenAI Developers'+(i.kind==='Video'?' · YouTube':'')+'</span></article>').join('')||'<p class="feed-note">No resources of this type in today’s selection.</p>';
+ if(resources){$('resourceStatus').textContent=(resources.checkedToday?'Checked today':resources.refreshedAt?'Last checked '+new Date(resources.refreshedAt).toLocaleDateString():'Starter collection')+' · '+resources.total+' saved resources'+(resources.warnings?.length?' · '+resources.warnings.join(' '):'');}
+}
+$('resourceType').onchange=renderResources;
+$('refreshResources').onclick=async()=>{
+ if(resourcesBusy||stopped)return;resourcesBusy=true;$('refreshResources').disabled=true;$('resourceStatus').textContent='Checking official resource indexes…';
+ try{resources=await api('/api/resources/refresh',{});renderResources();}
+ catch(e){$('resourceStatus').textContent='Could not check resources. Your saved links remain available. '+e.message;}
+ finally{resourcesBusy=false;$('refreshResources').disabled=stopped;}
+};
+function learningVisibility(show){$('learningFeed').hidden=!show;$('workspace').classList.toggle('learning-hidden',!show);$('toggleLearning').setAttribute('aria-expanded',String(show));}
+try{learningVisibility(localStorage.getItem('muse-learning-hidden')!=='true');}catch{}
+$('toggleLearning').onclick=()=>{const show=$('learningFeed').hidden;learningVisibility(show);try{localStorage.setItem('muse-learning-hidden',String(!show));}catch{}};
+api('/api/resources').then(d=>{resources=d;renderResources();}).catch(()=>{$('resourceStatus').textContent='Reopen or refresh Muse to load saved resources.';});
 load().then(()=>{if(data.job?.state==='running'){setBusy(true);jobId=data.job.id;poll=setInterval(checkJob,1500);}}).catch(e=>status(e.message,'error'));
 

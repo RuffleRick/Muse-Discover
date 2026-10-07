@@ -10,3 +10,4 @@
 - Consolidated the working app, saved local state, original theme backup, hosted source snapshot, and project documentation into Muse-Discover.
 - Prepared the public GitHub source repository with private state/media exclusions and a documented commit-and-push policy for completed future features and fixes.
 - Added instant search to Saved library and Pinned, including partial names, descriptions, features, sources, and notes; added result counts, Clear, and no-match feedback. Saved search is separate from idea generation.
+- Added a collapsible Codex learning sidebar with manually refreshed official article/tutorial/video indexes, daily rotating picks, type filters, offline cache, and a practical learning prompt. No background scanning or model inference is used.

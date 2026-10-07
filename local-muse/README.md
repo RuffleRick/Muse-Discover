@@ -5,6 +5,7 @@ Open **Start Muse.cmd** (or the Muse Local desktop shortcut) on this PC.
 - **Explore three new variations** uses the chosen idea's collected evidence to create new paths.
 - **Shuffle saved ideas**, browsing, pins, notes, and Codex kits require no inference.
 - **Saved library** and **Pinned** have instant search across names, descriptions, twists, audiences, features, sources, and saved notes. Search ignores capitalization and accents, and all entered words must match somewhere in the idea. **Clear** restores the complete list. Searching does not fetch sources or start the model.
+- **Learning** shows or hides a sidebar of daily picks from official OpenAI Codex blog, Cookbook, and learning indexes. Filter Articles, Tutorials, or Videos. **Check today's resources** fetches those indexes at most once per successful local calendar day; normal page loads read saved links only. Daily picks rotate from the saved collection, so they are not necessarily newly published that day. Video links open on YouTube; videos are not downloaded or embedded. Resources are cached in `data/resources.json`, separately from ideas and pins. No AI model or paid API is used for this feed.
 - Pin a concept, add your direction, choose a platform, and create/copy/download its Codex kit.
 - **Stop Muse** stops the app and any model job. Closing all its browser tabs also stops it after about two minutes. The browser heartbeat keeps only the lightweight web app available; it does not scan or run inference.
 

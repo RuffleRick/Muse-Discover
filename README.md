@@ -15,6 +15,7 @@ This folder is the main Muse project:
 - Explore three variations of a selected or pinned concept.
 - Browse and shuffle saved concepts without generation.
 - Search Saved library and Pinned instantly by names, descriptions, features, source text, or personal notes. Multiple words can match different parts of an idea; use Clear to reset.
+- Use the collapsible Learning sidebar for daily article, tutorial, and video picks. Check today's resources manually; saved links remain available offline without starting the model.
 - Pin ideas and save personal notes.
 - Create, copy, or download a Codex opening prompt and build workflow.
 - Stop Muse from the app. Closing every Muse tab also stops it after about two minutes.

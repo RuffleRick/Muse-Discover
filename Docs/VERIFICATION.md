@@ -29,3 +29,14 @@ Keep future check results specific: record what ran, its outcome, and remaining 
 - Inspected the dark search layout and confirmed generation controls are replaced by library search in saved views.
 - Node syntax check passed for the updated browser behavior.
 - Search uses only loaded local data and does not request generation or source collection. No saved library mutations were made during these checks.
+
+## Learning feed — October 6, 2026
+
+- Three Node tests passed: safe link handling, Markdown index parsing/video classification, and stable daily rotation with distinct items and balanced resource types.
+- Browser and server syntax checks passed.
+- Live integration refreshed all three official indexes: 36 distinct resources and 9 daily picks across Article, Tutorial, and Video.
+- A second same-day refresh reused the existing successful cache timestamp.
+- The refresh endpoint rejected a foreign Origin with HTTP 403.
+- Cached picks loaded while all network fetching was deliberately disabled in a separate read-only check.
+- Browser checks verified 3 video results, collapse/expand state, and the dark desktop sidebar layout.
+- Confirmed the model service remained stopped during the refresh checks; no idea generation was requested.
