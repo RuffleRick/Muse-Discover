@@ -15,3 +15,7 @@
 - Simplified Learning to five automatically discovered daily links from DEV Community and Hacker News-linked sources, removed feed filters and manual refresh controls, and kept daily results cached without model inference or a background scheduler.
 
 - Added guided brainstorming with keep/change direction, constraints, audience adaptation, three creativity levels, saved-idea combinations, persistent branch settings, a navigable family tree, and exploration direction in Codex kits.
+
+## October 7, 2026
+
+- Removed the Learning sidebar, navigation toggle, daily resource searches, and resource API endpoints. Restored the centered layout and retained private saved ideas, pins, and the inactive resource cache.

@@ -59,3 +59,11 @@ Keep future check results specific: record what ran, its outcome, and remaining 
 - Reopening after a server restart retained branch direction, combination reference, and all 13 paths in the tested family, including older variations.
 - Browser checks verified tree navigation back to the original concept, prefilled inherited keep/constraints/audience/creativity/combination controls, and recorded constraints in a Codex kit.
 - The live model output did not consistently honor the requested audience and read-only constraint. Guidance is visible for review. The final system prompt was strengthened after this observation; its quality improvement has not been established with another live run.
+
+## Learning sidebar removal — October 7, 2026
+
+- Browser and server syntax checks passed; all three exploration tests passed.
+- Active HTML, JavaScript, CSS, and server code were checked for removed sidebar and resource-fetch references; none remain.
+- Started the updated local server and verified both GET /api/resources and POST /api/resources/refresh return HTTP 404.
+- Restored the original centered layout rules. Visual browser verification could not run because the in-app browser was unavailable.
+- Personal library and resource cache were not edited, and no model generation was requested.

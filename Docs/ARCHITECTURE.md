@@ -4,7 +4,7 @@
 
 `Start Muse.cmd` delegates to `local-muse/Start Muse.cmd`, which runs `Start-Muse.ps1`. The launcher starts the Node server in its own app directory, waits for readiness, and opens the browser. It reuses an already-running Muse server.
 
-`server.mjs` serves the interface on `127.0.0.1:3008`, validates Host and POST Origin, manages generation jobs, and persists state. A browser heartbeat keeps the lightweight server available while tabs are open; it does not run inference. The browser also checks whether the daily learning feed is due. Stop Muse ends the server and its owned model job.
+`server.mjs` serves the interface on `127.0.0.1:3008`, validates Host and POST Origin, manages generation jobs, and persists state. A browser heartbeat keeps the lightweight server available while tabs are open; it does not run inference. Stop Muse ends the server and its owned model job.
 
 `core.mjs` collects public sources, maintains caching and backoff, validates concepts, and builds Codex kits from a fixed template. Its storage location is relative to the source file, so moving the complete app directory preserves its behavior.
 
@@ -12,7 +12,7 @@
 
 `public/index.html`, `public/style.css`, and `public/app.js` contain the interface. Theme changes preserve the DOM IDs used by the existing browser behavior.
 
-`resource-feed.mjs` searches DEV Community’s Codex-tag article API and the Hacker News Algolia story index on `POST /api/resources/refresh`. The browser requests it automatically on opening and after local date rollover while a tab remains open. `GET /api/resources` reads only the local cache. A versioned cache records each calendar day’s attempt, including failure, and concurrent refreshes share one request. The selector deduplicates URLs, prefers unseen links using a bounded 100-URL history, favors varied publishers, and returns up to five results. Title filters require both Codex development context and learning/workflow context. Requests have timeout and size limits and reject redirects. Public HTTPS result links are validated and titles are escaped; destination pages are not fetched automatically. No model, scheduler, or paid API is involved. The sidebar’s collapse preference remains in browser storage.
+The Learning sidebar and resource API routes have been removed. Muse no longer searches for daily learning resources.
 
 ## Guided exploration
 
@@ -24,7 +24,7 @@
 
 The external Ollama installation and model files remain in their existing user locations. They are not copied into this project or reinstalled during project consolidation.
 
-`data/resources.json` stores the learning catalog and refresh metadata. It uses an atomic temporary-file rename and is excluded from Git along with the rest of `data/`. It does not modify the idea library.
+Any previous `data/resources.json` cache is retained as private inactive data. The app no longer reads or updates it.
 
 ## Hosted source
 

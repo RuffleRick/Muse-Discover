@@ -101,27 +101,6 @@ $('shuffle').onclick=()=>{if(!data.ideas.length){status('Generate your first con
 $('close').onclick=()=>$('detail').close();
 $('detail').onclick=e=>{if(e.target===$('detail')){const r=$('detail').getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)$('detail').close();}};
 $('stop').onclick=async()=>{try{await api('/api/stop',{});}finally{stopped=true;clearInterval(poll);clearInterval(heartbeat);setBusy(false);$('detail').close();$('roll').disabled=true;$('stop').disabled=true;$('modelStatus').textContent='Muse stopped';status('Muse is stopped. Your library and pins are saved. Reopen with Start Muse.cmd.');}};
-const heartbeat=setInterval(()=>{if(!busy&&!stopped)api('/api/status').catch(()=>{});if(!stopped&&resourceDayChecked!==browserDay())void loadDailyResources();},20000);
-let resources=null,resourcesBusy=false,resourceDayChecked=null;
-function browserDay(date=new Date()){return [date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-');}
-function renderResources(){
- const list=resources?.items||[];
- $('resourceList').innerHTML=list.map(i=>'<article class="resource"><a href="'+esc(i.url)+'" target="_blank" rel="noopener noreferrer">'+esc(i.title)+' <span aria-hidden="true">↗</span></a><span class="resource-source">'+esc(i.source)+'</span></article>').join('')||'<p class="feed-note">No learning links available yet.</p>';
- if(resources){$('resourceStatus').textContent=(resources.refreshedAt?'Found '+new Date(resources.refreshedAt).toLocaleDateString():'Daily resources')+(resources.warnings?.length?' · '+resources.warnings.join(' '):'');}
-}
-async function loadDailyResources(){
- if(resourcesBusy||stopped)return;
- resourcesBusy=true;
- try{
-  resources=await api('/api/resources');renderResources();
-  if(!resources.checkedToday){$('resourceStatus').textContent='Searching for today’s learning links…';resources=await api('/api/resources/refresh',{});renderResources();}
-  resourceDayChecked=resources.day;
- }catch(e){resourceDayChecked=browserDay();$('resourceStatus').textContent='Daily search unavailable. Saved links remain here; Muse will try again tomorrow.';}
- finally{resourcesBusy=false;}
-}
-function learningVisibility(show){$('learningFeed').hidden=!show;$('workspace').classList.toggle('learning-hidden',!show);$('toggleLearning').setAttribute('aria-expanded',String(show));}
-try{learningVisibility(localStorage.getItem('muse-learning-hidden')!=='true');}catch{}
-$('toggleLearning').onclick=()=>{const show=$('learningFeed').hidden;learningVisibility(show);try{localStorage.setItem('muse-learning-hidden',String(!show));}catch{}};
-void loadDailyResources();
+const heartbeat=setInterval(()=>{if(!busy&&!stopped)api('/api/status').catch(()=>{});},20000);
 load().then(()=>{if(data.job?.state==='running'){setBusy(true);jobId=data.job.id;poll=setInterval(checkJob,1500);}}).catch(e=>status(e.message,'error'));
 

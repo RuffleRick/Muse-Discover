@@ -16,7 +16,6 @@ This folder is the main Muse project:
 - Browse and shuffle saved concepts without generation.
 - Search Saved library and Pinned instantly by names, descriptions, features, source text, or personal notes. Multiple words can match different parts of an idea; use Clear to reset.
 - Explore an idea with keep/change instructions, constraints, audience adaptation, creativity levels, and combinations. Revisit saved branches in its idea tree.
-- The collapsible Learning sidebar automatically searches developer communities once daily while Muse is open and shows up to five learning links. Saved results remain available offline without starting the model.
 - Pin ideas and save personal notes.
 - Create, copy, or download a Codex opening prompt and build workflow.
 - Stop Muse from the app. Closing every Muse tab also stops it after about two minutes.
@@ -36,7 +35,7 @@ The interface uses Forest Room's centered layout with Midnight's slate blue pale
 
 ## Operation and privacy
 
-Muse uses the installed Ollama runtime and `qwen3.5:4b`. It starts the model only for an explicit roll or variation request, then stops its owned model process tree. Idea research and generation remain manual, with no paid cloud fallback. The Learning feed checks once daily while Muse is open; it has no background service when Muse is closed.
+Muse uses the installed Ollama runtime and `qwen3.5:4b`. It starts the model only for an explicit roll or variation request, then stops its owned model process tree. Idea research and generation remain manual, with no paid cloud fallback. Muse has no daily resource searches or scheduled generation.
 
 Source collection currently uses Hacker News and Stack Exchange. Reddit is not connected. Public discussions inspire ideas; they do not prove novelty, demand, or low competition.
 
