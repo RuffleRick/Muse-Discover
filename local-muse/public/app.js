@@ -9,6 +9,24 @@ async function api(route,body){
 function status(message,kind='notice'){$('status').className=kind;$('status').textContent=message;}
 function setBusy(v){busy=v;$('roll').disabled=v;$('query').disabled=v;$('category').disabled=v;$('modelStatus').textContent=v?'Generating on this PC':'Model stopped';syncTools();}
 function isPinned(id){return data.pins.some(p=>p.idea.id===id);}
+function syncLibraryFilters(all){
+ for(const [id,key,label] of [['libraryTag','tags','All tags'],['libraryCollection','collections','All collections']]){
+  const select=$(id),current=select.value;
+  const names=[...new Map(all.flatMap(i=>i.organization?.[key]||[]).map(n=>[n.toLowerCase(),n])).entries()].sort((a,b)=>a[1].localeCompare(b[1]));
+  select.innerHTML='<option value="">'+label+'</option>'+names.map(([value,name])=>'<option value="'+esc(value)+'">'+esc(name)+'</option>').join('');
+  select.value=names.some(([value])=>value===current)?current:'';
+ }
+ const select=$('libraryStatus'),current=select.value;
+ select.innerHTML='<option value="">All statuses</option>'+Object.entries(data.libraryStatuses||{}).map(([value,label])=>'<option value="'+esc(value)+'">'+esc(label)+'</option>').join('');select.value=current;
+}
+function matchesOrganization(idea,tag,collection,projectStatus){
+ const settings=idea.organization||{tags:[],collections:[],status:'idea'};
+ return (!tag||settings.tags.some(n=>n.toLowerCase()===tag))&&(!collection||settings.collections.some(n=>n.toLowerCase()===collection))&&(!projectStatus||settings.status===projectStatus);
+}
+function organizationBadges(idea){
+ const settings=idea.organization;if(!settings)return '';
+ return '<div class="organization-badges">'+(settings.status!=='idea'?'<span>'+esc(data.libraryStatuses?.[settings.status]||settings.status)+'</span>':'')+settings.tags.map(n=>'<span>#'+esc(n)+'</span>').join('')+settings.collections.map(n=>'<span>Collection: '+esc(n)+'</span>').join('')+'</div>';
+}
 function render(){
  $('pinCount').textContent=data.pins.length;
  for(const [id,v] of [['exploreNav','board'],['pinsNav','pins'],['libraryNav','library']])$(id).classList.toggle('active',view===v);
@@ -16,21 +34,25 @@ function render(){
  $('generationControls').hidden=savedView;
  $('librarySearchControls').hidden=!savedView;
  const all=view==='pins'?data.pins.map(p=>p.idea):view==='library'?[...data.ideas].reverse():board;
+ if(savedView)syncLibraryFilters(all);
+ const tag=savedView?$('libraryTag').value:'',collection=savedView?$('libraryCollection').value:'',projectStatus=savedView?$('libraryStatus').value:'';
  const normalize=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
  const terms=savedView?normalize($('libraryQuery').value).trim().split(/\s+/).filter(Boolean):[];
  const notes=new Map(data.pins.map(p=>[p.idea.id,p.note]));
- const list=terms.length?all.filter(i=>{
-  const text=normalize([i.name,i.category,i.pitch,i.twist,i.audience,...(i.features||[]),i.evidence,i.validation,...Object.values(i.exploration||{}),notes.get(i.id),...(i.sources||[]).flatMap(s=>[s.title,s.excerpt])].join(' '));
-  return terms.every(term=>text.includes(term));
- }):all;
+ const list=all.filter(i=>{
+  const settings=i.organization||{tags:[],collections:[],status:'idea'};
+  const text=normalize([i.name,i.category,i.pitch,i.twist,i.audience,...(i.features||[]),i.evidence,i.validation,...Object.values(i.exploration||{}),...settings.tags,...settings.collections,data.libraryStatuses?.[settings.status]||settings.status,notes.get(i.id),...(i.sources||[]).flatMap(s=>[s.title,s.excerpt])].join(' '));
+  return terms.every(term=>text.includes(term))&&matchesOrganization(i,tag,collection,projectStatus);
+ });
+ const filtering=terms.length||tag||collection||projectStatus;
  $('heading').textContent=view==='pins'?'Keep the paths worth returning to.':view==='library'?'Every direction you’ve discovered.':'A little curiosity. A new direction.';
  $('intro').textContent=view==='pins'?'Search your pinned concepts and notes, or open an idea to keep exploring.':view==='library'?'Search by anything you remember, then open, pin, or branch a saved concept.':'Find a useful twist on a familiar problem, game, or everyday task.';
- $('libraryInfo').textContent=savedView?list.length+' of '+all.length+' '+(view==='pins'?'pinned ideas':'saved concepts')+(terms.length?' match your search':'') :data.ideas.length+' generated concepts in your local library · '+data.pins.length+' pinned';
+ $('libraryInfo').textContent=savedView?list.length+' of '+all.length+' '+(view==='pins'?'pinned ideas':'saved concepts')+(filtering?' match your search and filters':'') :data.ideas.length+' generated concepts in your local library · '+data.pins.length+' pinned';
  if(savedView&&!list.length){
-  $('board').innerHTML='<div class="empty"><h2>'+(terms.length?'No matching ideas.':view==='pins'?'Your next favorite belongs here.':'Your library is ready for its first idea.')+'</h2><p>'+(terms.length?'Try fewer words or a different detail, or clear the search to see every idea.':view==='pins'?'Pin a concept to save it here with your notes.':'Use Explore to roll your first concepts.')+'</p></div>';
+  $('board').innerHTML='<div class="empty"><h2>'+(filtering?'No matching ideas.':view==='pins'?'Your next favorite belongs here.':'Your library is ready for its first idea.')+'</h2><p>'+(filtering?'Try fewer words or different filters, or use Clear to see every idea.':view==='pins'?'Pin a concept to save it here with your notes.':'Use Explore to roll your first concepts.')+'</p></div>';
   return;
  }
- $('board').innerHTML=list.length?list.map(i=>'<article class="card"><div class="card-top"><span class="tag">'+esc(i.category)+'</span><button class="pin '+(isPinned(i.id)?'on':'')+'" data-pin="'+esc(i.id)+'" aria-label="'+(isPinned(i.id)?'Unpin':'Pin')+' '+esc(i.name)+'">'+(isPinned(i.id)?'★':'☆')+'</button></div><button class="title-button" data-open="'+esc(i.id)+'">'+esc(i.name)+'</button><p>'+esc(i.pitch)+'</p><p class="twist">'+esc(i.twist)+'</p><div class="card-bottom"><span>'+i.sources.length+' source'+(i.sources.length===1?'':'s')+' · LOCAL AI</span><button data-open="'+esc(i.id)+'">Explore idea →</button></div></article>').join(''):'<div class="empty"><h2>'+(view==='pins'?'Your next favorite belongs here.':'Start with a roll. Or follow a curiosity.')+'</h2><p>'+(view==='pins'?'Pin a concept to save it for later.':'Try “solitaire variants,” “leftovers,” or “photography.” Muse will find discussions and generate up to three new directions on your PC.')+'</p><p>The model stays stopped until you ask for new ideas.</p></div>';
+ $('board').innerHTML=list.length?list.map(i=>'<article class="card"><div class="card-top"><span class="tag">'+esc(i.category)+'</span><button class="pin '+(isPinned(i.id)?'on':'')+'" data-pin="'+esc(i.id)+'" aria-label="'+(isPinned(i.id)?'Unpin':'Pin')+' '+esc(i.name)+'">'+(isPinned(i.id)?'★':'☆')+'</button></div><button class="title-button" data-open="'+esc(i.id)+'">'+esc(i.name)+'</button><p>'+esc(i.pitch)+'</p><p class="twist">'+esc(i.twist)+'</p>'+organizationBadges(i)+'<div class="card-bottom"><span>'+i.sources.length+' source'+(i.sources.length===1?'':'s')+' · LOCAL AI</span><button data-open="'+esc(i.id)+'">Explore idea →</button></div></article>').join(''):'<div class="empty"><h2>'+(view==='pins'?'Your next favorite belongs here.':'Start with a roll. Or follow a curiosity.')+'</h2><p>'+(view==='pins'?'Pin a concept to save it for later.':'Try “solitaire variants,” “leftovers,” or “photography.” Muse will find discussions and generate up to three new directions on your PC.')+'</p><p>The model stays stopped until you ask for new ideas.</p></div>';
 }
 function find(id){return data.ideas.find(i=>i.id===id)||data.pins.find(p=>p.idea.id===id)?.idea;}
 async function load(){data=await api('/api/state');if(!board.length)board=data.ideas.slice(-3);render();}
@@ -108,6 +130,22 @@ function ideaTree(idea){
  for(const root of children.get(null)||[])walk(root,0);for(const i of nodes)if(!seen.has(i.id))walk(i,0);
  return '<details class="idea-tree" open><summary>Idea tree · '+nodes.length+' '+(nodes.length===1?'path':'paths')+'</summary><p>Open any saved path to revisit, pin, or branch it. Indented paths descend from the idea above them.</p><ul>'+rows.join('')+'</ul></details>';
 }
+function organizationPanel(idea){
+ const settings=idea.organization||{tags:[],collections:[],status:'idea'};
+ return '<details class="idea-organization"><summary>Organize this idea</summary><p>Tags describe an idea. Collections group ideas you want to revisit together. These labels apply to this path only and do not run the model.</p><label for="ideaTags">Tags · comma separated · up to 12</label><input id="ideaTags" maxlength="622" value="'+esc(settings.tags.join(', '))+'" placeholder="offline, puzzle, quick prototype"><label for="ideaCollections">Collections · comma separated · up to 5</label><input id="ideaCollections" maxlength="258" value="'+esc(settings.collections.join(', '))+'" placeholder="Weekend projects, Games to try"><label for="ideaProjectStatus">Project status</label><select id="ideaProjectStatus">'+Object.entries(data.libraryStatuses||{idea:'Idea'}).map(([value,label])=>'<option value="'+esc(value)+'" '+(settings.status===value?'selected':'')+'>'+esc(label)+'</option>').join('')+'</select><button id="saveOrganization" class="secondary" type="button" '+(busy?'disabled':'')+'>Save organization</button><p class="search-hint">Each tag or collection name can contain up to 50 characters. Clear a field to remove its labels. Saving does not pin an idea.</p><p id="organizationStatus" role="status" aria-live="polite"></p></details>';
+}
+async function saveOrganization(id){
+ if(busy||stopped)return;
+ const button=$('saveOrganization');button.disabled=true;$('organizationStatus').textContent='Saving…';
+ const split=value=>value.split(',').map(n=>n.trim()).filter(Boolean);
+ try{
+  const result=await api('/api/library/organize',{id,organization:{tags:split($('ideaTags').value),collections:split($('ideaCollections').value),status:$('ideaProjectStatus').value}});
+  data.ideas=result.ideas;data.pins=result.pins;board=board.map(i=>find(i.id)||i);
+  if(selected?.id===id){selected=find(id);$('ideaTags').value=selected.organization.tags.join(', ');$('ideaCollections').value=selected.organization.collections.join(', ');$('organizationStatus').textContent='Labels and status saved on this PC.';}
+  render();
+ }catch(e){if(selected?.id===id)$('organizationStatus').textContent=e.message;}
+ finally{button.disabled=busy||stopped;}
+}
 function openIdea(id){
  selected=find(id);if(!selected)return;
  const i=selected;
@@ -116,6 +154,8 @@ function openIdea(id){
  if(i.exploration){for(const [id,key] of [['keepDirection','keep'],['branchConstraints','constraints'],['branchAudience','audience'],['branchCreativity','creativity'],['combineIdea','combineId']])$(id).value=i.exploration[key]|| (key==='creativity'?'balanced':'');}
  $('branch').onclick=()=>{if(busy||stopped)return;const settings={keep:$('keepDirection').value,change:$('changeDirection').value,constraints:$('branchConstraints').value,audience:$('branchAudience').value,creativity:$('branchCreativity').value,combineId:$('combineIdea').value};$('detail').close();void generate(i.id,settings);};
  $('detailBody').onclick=e=>{const node=e.target.closest('[data-tree-open]');if(node){$('detail').close();openIdea(node.dataset.treeOpen);}};
+ $('detailBody').insertAdjacentHTML('afterbegin',organizationPanel(i));
+ $('saveOrganization').onclick=()=>void saveOrganization(i.id);
  $('applyDirection').onclick=applyBrainstormDirection;
  $('detailBody').onchange=updatePathComparison;
  $('detailPin').onclick=async()=>{await pin(i.id,isPinned(i.id));$('detailPin').textContent=isPinned(i.id)?'Unpin idea':'Pin for later';};
@@ -133,7 +173,8 @@ function openIdea(id){
 function download(name,content,type){const url=URL.createObjectURL(new Blob([content],{type}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 $('searchForm').onsubmit=e=>{e.preventDefault();void generate();};
 $('libraryQuery').oninput=()=>render();
-$('clearLibrarySearch').onclick=()=>{$('libraryQuery').value='';render();$('libraryQuery').focus();};
+$('clearLibrarySearch').onclick=()=>{for(const id of ['libraryQuery','libraryTag','libraryCollection','libraryStatus'])$(id).value='';render();$('libraryQuery').focus();};
+for(const id of ['libraryTag','libraryCollection','libraryStatus'])$(id).onchange=()=>render();
 $('board').onclick=e=>{const open=e.target.closest('[data-open]');const p=e.target.closest('[data-pin]');if(open)openIdea(open.dataset.open);else if(p)void pin(p.dataset.pin,isPinned(p.dataset.pin));};
 for(const [id,v] of [['exploreNav','board'],['pinsNav','pins'],['libraryNav','library']])$(id).onclick=async()=>{view=v;render();try{await load();}catch(e){status(e.message,'error');}};
 $('shuffle').onclick=()=>{if(!data.ideas.length){status('Generate your first concepts with Roll fresh ideas.');return;}board=[...data.ideas].sort(()=>Math.random()-.5).slice(0,6);view='board';render();status('Shuffled saved concepts. The model stayed stopped.');};

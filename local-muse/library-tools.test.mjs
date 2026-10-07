@@ -3,10 +3,38 @@ import assert from 'node:assert/strict';
 import {mkdtemp,rm} from 'node:fs/promises';
 import os from 'node:os';import path from 'node:path';
 import {exportLibrary,validateLibrary,mergeLibrary,clearGenerated,createBackup,listBackups,readBackup} from './library-tools.mjs';
+import {organization,organizeIdea} from './library-organization.mjs';
 const source={id:'s',url:'https://example.com/discussion',title:'Discussion',excerpt:'Inspiration',site:'example',author:'Author',retrievedAt:'2026-10-07T12:00:00Z'};
 function idea(id,parentId=null){return {id,family:'family',parentId,name:'Idea '+id,category:'Tools',pitch:'Useful software',twist:'Different workflow',audience:'People',features:['One','Two','Three'],validation:'Test it',evidence:'Discussion',sources:[source],generatedAt:'2026-10-07T12:00:00Z',mode:'local-model',exploration:{keep:'interaction',change:'',audience:'',constraints:'offline',creativity:'focused',combineId:'other',combineName:'Other'},relatedIdeaIds:['other'],reasoning:{sourceQuote:'Discussion excerpt for context',inputs:['Manual entries'],workflow:'Enter data and review a simple result',limitations:'No external measurements available'}};}
 const first=idea('root'),child=idea('child','root');
 const original={ideas:[first,child],pins:[{idea:child,note:'My private note',createdAt:'2026-10-07T12:00:00Z'}],sourceCache:{private:true},backoffUntil:123};
+test('organization normalizes labels, bounds input, and rejects unknown statuses',()=>{
+ assert.deepEqual(organization({tags:[' Offline ','offline','Quick  build',''],collections:['Weekend'],status:'shortlisted'}),{tags:['Offline','Quick build'],collections:['Weekend'],status:'shortlisted'});
+ for(const change of [{status:'__proto__'},{status:['idea']},{tags:'bad'},{tags:['x'.repeat(51)]},{tags:Array(13).fill('x')},{tags:['a,b']},{collections:['bad\nname']},{collections:Array(6).fill('x')}])assert.throws(()=>organization({tags:[],collections:[],status:'idea',...change}));
+});
+test('organizing updates library and standalone pin snapshots without changing notes or relationships',()=>{
+ const settings={tags:['offline'],collections:['Weekend'],status:'building'};
+ const next=organizeIdea(original,'child',settings);
+ assert.deepEqual(next.ideas[1].organization,settings);assert.deepEqual(next.pins[0].idea.organization,settings);assert.equal(next.pins[0].note,original.pins[0].note);assert.equal(next.ideas[1].parentId,'root');assert.equal(next.ideas[0],first);assert.equal(original.ideas[1].organization,undefined);
+ const pinOnly=organizeIdea(clearGenerated(next),'child',{tags:[],collections:[],status:'parked'});assert.equal(pinOnly.ideas.length,0);assert.equal(pinOnly.pins[0].idea.organization.status,'parked');
+ assert.throws(()=>organizeIdea(original,'missing',settings),/not found/);
+});
+test('portable imports preserve organization and existing metadata wins merge conflicts',()=>{
+ const state=organizeIdea(original,'child',{tags:['puzzle'],collections:['Weekend'],status:'completed'});
+ const imported=validateLibrary(exportLibrary(state));assert.deepEqual(imported.ideas[1].organization,state.ideas[1].organization);assert.deepEqual(imported.pins[0].idea.organization,state.pins[0].idea.organization);
+ assert.equal(validateLibrary(exportLibrary(original)).ideas[1].organization,undefined);
+ const conflicting=organizeIdea(original,'child',{tags:['old'],collections:[],status:'idea'});
+ assert.equal(mergeLibrary(state,validateLibrary(exportLibrary(conflicting))).ideas[1].organization.status,'completed');
+ const invalid=exportLibrary(state);invalid.ideas[1].organization.status='unknown';assert.throws(()=>validateLibrary(invalid));
+});
+test('backups restore organization after clearing generated ideas and keep pin metadata',async()=>{
+ const folder=await mkdtemp(path.join(os.tmpdir(),'muse-organization-test-'));
+ try{
+ const state=organizeIdea(original,'child',{tags:['offline'],collections:['Try soon'],status:'shortlisted'});
+ const name=await createBackup(state,folder);const restored=await readBackup(folder,name);
+ assert.deepEqual(restored.ideas[1].organization,state.ideas[1].organization);assert.deepEqual(clearGenerated(state).pins[0].idea.organization,restored.pins[0].idea.organization);
+ }finally{assert.ok(path.resolve(folder).startsWith(path.resolve(os.tmpdir())+path.sep+'muse-organization-test-'));await rm(folder,{recursive:true,force:true});}
+});
 test('export/import roundtrip keeps pins, notes, sources, and branch relationships without internal cache',()=>{
  const exported=exportLibrary(original);assert.equal(exported.sourceCache,undefined);const incoming=validateLibrary(JSON.parse(JSON.stringify(exported)));
  assert.deepEqual(incoming.ideas,original.ideas);assert.deepEqual(incoming.pins,original.pins);

@@ -7,6 +7,7 @@ import {generate,stopModel,model} from './engine.mjs';
 import {explorationOptions,brainstormDirections} from './exploration.mjs';
 import {createMobileAccess} from './mobile-access.mjs';
 import {createRedditSearch} from './reddit-search.mjs';
+import {libraryStatuses,organizeIdea} from './library-organization.mjs';
 import {MAX_IMPORT_BYTES,exportLibrary,validateLibrary,mergeLibrary,clearGenerated,createBackup,listBackups,readBackup} from './library-tools.mjs';
 const port=3008;
 const origin='http://127.0.0.1:'+port;
@@ -84,13 +85,23 @@ const server=http.createServer(async(req,res)=>{
  }
  if(url.pathname==='/api/state'&&req.method==='GET'){
  lastSeen=Date.now();
- reply(res,200,{ideas:state.ideas,pins:state.pins,categories,brainstormDirections,model,job,mode:'local-on-demand'});return;
+ reply(res,200,{ideas:state.ideas,pins:state.pins,categories,brainstormDirections,libraryStatuses,model,job,mode:'local-on-demand'});return;
  }
  if(url.pathname==='/api/library/export'&&req.method==='GET'){
  lastSeen=Date.now();reply(res,200,exportLibrary(state));return;
  }
  if(url.pathname==='/api/library/backups'&&req.method==='GET'){
  lastSeen=Date.now();reply(res,200,{backups:await listBackups(backupDirectory)});return;
+ }
+ if(url.pathname==='/api/library/organize'&&req.method==='POST'){
+ if(job?.state==='running'){reply(res,409,{error:'Wait for generation to finish before organizing ideas.'});return;}
+ managing=true;lastSeen=Date.now();
+ try{
+ const b=await body(req);const next=organizeIdea(state,b.id,b.organization);
+ await writeQueue.catch(()=>{});await save(next);state=next;
+ reply(res,200,{ideas:state.ideas,pins:state.pins});
+ }finally{managing=false;}
+ return;
  }
  if(['/api/library/import','/api/library/backup','/api/library/restore','/api/library/clear'].includes(url.pathname)&&req.method==='POST'){
  if(job?.state==='running'){reply(res,409,{error:'Wait for idea generation to finish before changing the library.'});return;}

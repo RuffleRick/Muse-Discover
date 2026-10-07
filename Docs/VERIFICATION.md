@@ -1,5 +1,11 @@
 # Verification notes
 
+## Reliable library organization — October 7, 2026
+
+- All 56 regression tests passed. Seven added checks cover label normalization and bounds, rejected statuses, synchronized generated/pinned snapshots, pin-only organization, retained notes and relationships, v1 import compatibility and conflict handling, backup restoration, combined filters/search, escaped metadata, and saving without replacing an unsent exploration draft. Filter changes make no network requests; the organization control sends only its library mutation.
+- Syntax and diff checks passed. Localhost smoke checks confirmed five status options and served filter markup; a missing idea was rejected with 400 and wrong-Origin mutation with 403. The private library's SHA-256 remained unchanged. No source searches or generation requests were made during testing.
+- Browser appearance was not visually checked. Frontend behavior was exercised using a DOM stub; successful disk snapshot roundtrips used temporary test libraries rather than edits to the owner's library. Real paired-phone testing remains part of the unfinished mobile-access work.
+
 ## Deeper brainstorming expansion — October 7, 2026
 
 - All 49 regression tests passed. Five new checks cover preset normalization, retained pin-only family paths, unrelated ungrouped ideas, parent differences and unavailable parents, escaped names, preserving existing fields, a three-path selection limit, and no network calls from direction/compare controls. Comparison changes also preserve an unsent direction draft.

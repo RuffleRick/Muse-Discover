@@ -4,7 +4,7 @@ Rows marked Implemented describe available features; the remaining rows are prop
 
 | Priority | Direction | Proposed features | Completion target |
 | --- | --- | --- | --- |
-| First · partly implemented | Reliable library | Available: export/import, backup restoration, clear library while keeping pins, expandable tools hub. Remaining: tags, collections, project status, cancellation, separate research/model timings | Find and restore ideas without losing notes or relationships |
+| First · expanded, partly implemented | Reliable library | Available: export/import, backup restoration, clear library while keeping pins, expandable tools hub, tags, collections, project status, combined saved-search filters. Remaining: cancellation, separate research/model timings | Find, organize, and restore ideas without losing notes or relationships |
 | Implemented · expanded | Deeper brainstorming | Keep/change instructions, constraints, three creativity levels, saved-idea combinations, audience adaptations, navigable idea tree, recorded branch directions, eight editable direction presets, comparison of up to three saved family paths, parent wording differences. Remaining: semantic diversity evaluation and saved direction drafts | Explore and revisit different paths; model instruction-following still requires review |
 | Next · partly implemented | Stronger research | Available: complaint/wish/workaround detection, provisional recurring-need grouping, cited signal snapshots. Remaining: user-supplied links, more public sources, Reddit access evaluation, semantic clustering and evaluation | Explain which observations support an idea and which claims remain uncertain |
 | Later | Choosing projects | Shortlist comparisons, smallest useful version, assumption checks, competitor research, validation experiments | Each shortlisted project has a manageable prototype and a concrete value test |
@@ -14,6 +14,6 @@ Rows marked Implemented describe available features; the remaining rows are prop
 
 Reddit search-provider integration is implemented and awaiting the owner's free Tavily API key for activation/live testing. It uses indexed search snippets, not direct Reddit API access or full-thread collection. See [setup and limitations](REDDIT-ACCESS.md). Direct Reddit API integration is deferred.
 
-Suggested next feature release: tags and status, clearer evidence, and stronger Codex kits with acceptance criteria.
+Suggested next library release: cancellation and separate research/model timings. Other candidates: clearer evidence and stronger Codex kits with acceptance criteria.
 
 Measure success by worthwhile saved ideas, completed prototypes, and skills learned as well as generation speed. Source volume alone is not proof of demand or an underserved market.

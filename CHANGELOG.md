@@ -2,6 +2,8 @@
 
 ## October 7, 2026
 
+- Added reliable-library organization: tags, multiple collections, and Idea/Shortlisted/Building/Completed/Parked statuses. Collapsed saved-view filters combine with text search, cards display labels, and the idea organizer preserves pinned snapshots, notes, and branch relationships. Organization is validated through exports/imports and backups; existing ideas need no migration. No model requests are made by organizing or filtering.
+
 - Expanded deeper brainstorming with eight editable direction presets, comparison of up to three saved family paths, and parent wording differences. Presets preserve existing keep/creativity/combination controls and nonempty audience/constraints. Browsing uses retained ideas and pins without generation, including pins whose parent has been cleared.
 
 - Fixed false evidence rejections caused by literal outer quotation marks in local-model source quotes. Both excerpt and need-signal checks now tolerate balanced quotation framing while preserving exact wording, source identity, and length requirements.

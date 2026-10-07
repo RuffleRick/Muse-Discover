@@ -5,6 +5,7 @@ import {categories} from './core.mjs';
 import {explorationOptions} from './exploration.mjs';
 import {researchSummary} from './opportunity-signals.mjs';
 import {isSearchSnippet} from './reddit-search.mjs';
+import {organization} from './library-organization.mjs';
 export const MAX_IMPORT_BYTES=20*1024*1024;
 function string(v,key,max=2000){if(typeof v!=='string'||v.length>max)throw Error('Invalid or oversized '+key+'.');return v;}
 function id(v,key){const s=string(v,key,100);if(!s.trim())throw Error('Missing '+key+'.');return s;}
@@ -28,6 +29,7 @@ function idea(i){
  if(i.relatedIdeaIds){if(!Array.isArray(i.relatedIdeaIds)||i.relatedIdeaIds.length>20)throw Error('Invalid related ideas.');out.relatedIdeaIds=i.relatedIdeaIds.map(v=>id(v,'related ID'));}
  if(i.reasoning){const r=i.reasoning;if(!Array.isArray(r.inputs)||r.inputs.length<1||r.inputs.length>5)throw Error('Invalid prototype inputs.');out.reasoning={sourceQuote:string(r.sourceQuote,'source excerpt',350),inputs:r.inputs.map(v=>string(v,'prototype input',300)),workflow:string(r.workflow,'workflow',700),limitations:string(r.limitations,'limitations',500)};}
  if(i.research)out.research=researchSummary(out.sources,string(i.research.topic||'','research topic',140));
+ if(i.organization!==undefined)out.organization=organization(i.organization);
  return out;
 }
 export function validateLibrary(value){

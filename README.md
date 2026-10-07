@@ -16,6 +16,7 @@ This folder is the main Muse project:
 - Browse and shuffle saved concepts without generation.
 - Search Saved library and Pinned instantly by names, descriptions, features, source text, or personal notes. Multiple words can match different parts of an idea; use Clear to reset.
 - Open **Library tools** for JSON export/import, local backups and restoration, or clearing generated ideas while keeping pins.
+- Open an idea's **Organize this idea** menu to save tags, collections, and project status (Idea, Shortlisted, Building, Completed, or Parked). Labels apply to that path; saving does not pin it. Saved library and Pinned offer expandable filters that combine with text search. Clear resets both search and filters. Labels and status survive exports, imports, backups, and clearing when the idea is pinned.
 - New ideas include prototype inputs, workflow, limits, and a cited discussion excerpt. A roll returns up to three concepts and rejects known unsupported claims before saving.
 - Explore an idea with keep/change instructions, constraints, audience adaptation, creativity levels, and combinations. Revisit saved branches in its idea tree.
 - Open an idea's **Try a brainstorming direction** menu for eight editable starting directions. **Use this direction** fills Change that, plus empty audience/constraint fields when applicable; **Explore new variations** starts generation. **Compare saved paths** shows up to three retained paths side by side, and branches show **What changed from the parent**. These browsing controls do not run the model.

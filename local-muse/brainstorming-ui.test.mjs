@@ -3,12 +3,13 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFile} from 'node:fs/promises';
 import {brainstormDirections,explorationOptions,explorationContext} from './exploration.mjs';
+import {libraryStatuses} from './library-organization.mjs';
 const script=await readFile(new URL('./public/app.js',import.meta.url),'utf8');
 const root={id:'root',family:'family',name:'Original',pitch:'Original concept',twist:'Original twist',audience:'Everyone',features:['One feature']};
 const branch={...root,id:'branch',parentId:'root',name:'A <branch>',twist:'A different twist',features:['New feature']};
 function setup(state){
  const elements=new Map();
- const element=id=>{if(!elements.has(id))elements.set(id,{value:'',textContent:'',addEventListener(){}});return elements.get(id);};
+ const element=id=>{if(!elements.has(id))elements.set(id,{value:'',textContent:'',classList:{toggle(){}},addEventListener(){}});return elements.get(id);};
  let requests=0;
  const context=vm.createContext({document:{getElementById:element},location:{hostname:'127.0.0.1'},setInterval(){},fetch(){requests++;return new Promise(()=>{});},fixture:state,root,branch});
  vm.runInContext(script,context);vm.runInContext('data=fixture;',context);
@@ -47,4 +48,25 @@ test('comparison rejects a fourth selection, leaves drafts alone, and never requ
  assert.equal(ui.element('changeDirection').value,'My draft');assert.equal(ui.requests(),before);
  for(const choice of choices)choice.checked=false;
  ui.run('updatePathComparison(event)');assert.equal(ui.element('pathComparisonCards').innerHTML,'');assert.match(ui.element('pathComparisonStatus').textContent,/Select a saved path/);
+});
+test('library organization filters combine and unlabelled ideas default to Idea status',()=>{
+ const ui=setup({ideas:[],pins:[]});ui.context.organized={...root,organization:{tags:['Offline'],collections:['Weekend'],status:'building'}};
+ assert.equal(ui.run('matchesOrganization(organized,"offline","weekend","building")'),true);
+ assert.equal(ui.run('matchesOrganization(organized,"offline","weekend","parked")'),false);
+ assert.equal(ui.run('matchesOrganization(root,"","","idea")'),true);
+ assert.equal(ui.run('matchesOrganization(root,"offline","","")'),false);
+});
+test('saved search includes labels and combines filters with honest empty results without requests',()=>{
+ const organized={...root,sources:[],category:'Tools',organization:{tags:['Offline'],collections:['Weekend'],status:'shortlisted'}};
+ const ui=setup({ideas:[organized],pins:[],libraryStatuses});const before=ui.requests();ui.element('libraryQuery').value='weekend shortlisted';
+ ui.run('view="library";render()');assert.match(ui.element('libraryInfo').textContent,/1 of 1/);
+ ui.element('libraryStatus').value='parked';ui.run('render()');assert.match(ui.element('board').innerHTML,/No matching ideas/);assert.match(ui.element('libraryInfo').textContent,/0 of 1/);
+ assert.equal(ui.requests(),before);
+});
+test('organization markup escapes labels and saving preserves unsent exploration drafts',async()=>{
+ const organized={...root,sources:[],category:'Tools',organization:{tags:['<offline>'],collections:[],status:'idea'}};
+ const ui=setup({ideas:[organized],pins:[],libraryStatuses});const html=ui.run('organizationPanel(data.ideas[0])');assert.match(html,/&lt;offline&gt;/);assert.doesNotMatch(html,/value="<offline>"/);
+ ui.element('ideaTags').value='Puzzle';ui.element('ideaCollections').value='Weekend';ui.element('ideaProjectStatus').value='building';ui.element('changeDirection').value='Unsent draft';
+ const calls=[];ui.context.fetch=async(route,options)=>{calls.push({route,body:JSON.parse(options.body)});return {ok:true,json:async()=>({ideas:[{...organized,organization:{tags:['Puzzle'],collections:['Weekend'],status:'building'}}],pins:[]})};};
+ await ui.run('selected=data.ideas[0];saveOrganization("root")');assert.equal(calls.length,1);assert.equal(calls[0].route,'/api/library/organize');assert.equal(calls[0].body.organization.status,'building');assert.equal(ui.element('changeDirection').value,'Unsent draft');assert.match(ui.element('organizationStatus').textContent,/saved/);
 });
