@@ -2,6 +2,8 @@
 
 ## October 7, 2026
 
+- Fixed false evidence rejections caused by literal outer quotation marks in local-model source quotes. Both excerpt and need-signal checks now tolerate balanced quotation framing while preserving exact wording, source identity, and length requirements.
+
 - Added optional Tavily free-plan Reddit search snippets to manual fresh rolls, with desktop Library tools connection/disable/remove controls, private API-key storage, persistent 900-attempt monthly cap, backoff, and existing-source fallback. Snippets retain their evidence limits in prompts, detail views, Codex kits, exports/imports, and backups; they do not establish detected needs or repetition. Full Reddit threads are not fetched. Connection and live provider/model testing await the owner's free-plan key.
 
 ## October 6, 2026

@@ -1,5 +1,11 @@
 # Verification notes
 
+## Evidence quotation framing — October 7, 2026
+
+- A new diagnostic attempt using retained Muse sources reproduced false rejection: the model wrapped otherwise matching source text in literal quotation marks. This was not a recovery of the earlier rejected model outputs, which were not retained.
+- Added regression coverage for straight/curly single/double framing, nested framing, unbalanced/mismatched marks, changed words, short/oversized quotes, and incorrect first-source citations. Need-signal checks use the same framing rules and continue rejecting altered quotes and wrong sources.
+- All 42 regression checks passed. Diagnostic captures remain private in ignored data; no private source excerpts or model outputs are committed.
+
 ## Reddit search-provider integration — October 7, 2026
 
 - All 40 regression checks passed, including nine new mocked search tests. Syntax checks passed for all local `.mjs` files and the browser app script; `git diff --check` passed. An existing collection test was updated for the new versioned cache key. Initial sandbox disk tests hit permission errors on atomic rename; the same tests passed with normal filesystem access.

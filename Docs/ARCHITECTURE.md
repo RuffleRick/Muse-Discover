@@ -48,6 +48,8 @@ Disabling access, stopping Muse, or a tunnel exit revokes sessions and closes th
 
 ## Research need signals
 
+Both first-source excerpt verification and detected-signal grounding use `evidenceQuotes()` from `research-quality.mjs`. Comparison preserves the original quote and permits removal of up to three balanced outer pairs of straight or curly single/double quotation marks. Internal punctuation and wording remain unchanged, with existing case/whitespace normalization. Candidates must remain 20–350 characters, occur in the first cited detailed excerpt, and, for need-led fresh rolls, match a detected signal from that source. This fixes false rejection of model-added quotation framing without accepting paraphrases or incorrect citations.
+
 ### Optional Reddit search-provider snippets
 
 `reddit-search.mjs` uses Tavily's official search endpoint, with a `site:reddit.com` query and restricted domain filter, one basic request per uncached fresh roll. Answers, raw content, images, automatic parameter upgrades, redirects, and retries are disabled. No direct Reddit requests occur. Settings are changed only via desktop `/api/reddit-search`; the mobile gateway allowlist excludes this administrative route. A separate private `data/reddit-search.json` file stores the key, enablement, configuration revision, UTC monthly reserved-attempt counter, and provider backoff. Atomic writes reserve an attempt before network access; failures count. Serial operations preserve the 900-attempt limit through restart, key replacement, removal, and library restoration. Corrupt settings fail closed. The counter measures this installation only; free-plan confirmation does not verify the provider account's actual billing settings.

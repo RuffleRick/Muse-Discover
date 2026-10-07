@@ -27,6 +27,12 @@ test('quality checks require actual cited quotes and practical inputs and limits
  assert.throws(()=>checkLogic({ideas:[prototype({pitch:'Estimate heavy metal contamination from soil chemistry'})]},[discussion]),/Chemical/);
 });
 test('one coherent idea is accepted without padding to three',()=>{assert.equal(validateIdeas({ideas:[prototype()]},[discussion],null).length,1);});
+test('evidence accepts balanced quote framing but still rejects altered text and incorrect citations',()=>{
+ const quote=prototype().sourceQuote;
+ for(const framed of [quote,'"'+quote+'"',"'"+quote+"'",'“'+quote+'”','‘'+quote+'’','"“'+quote+'”"'])assert.doesNotThrow(()=>checkLogic({ideas:[prototype({sourceQuote:framed})]},[discussion]));
+ for(const invalid of ['"'+quote,'“'+quote+'"','"'+quote.replace('setup','preparation')+'"','"Too short."','"'+('x'.repeat(351))+'"'])assert.throws(()=>checkLogic({ideas:[prototype({sourceQuote:invalid})]},[discussion]),/verifiable/);
+ assert.throws(()=>checkLogic({ideas:[prototype({sourceQuote:'"'+quote+'"',sourceIds:['other']})]},[discussion,{...discussion,id:'other',excerpt:'A different source describing gardening and weather patterns. '.repeat(3)}]),/verifiable/);
+});
 test('collection uses routed site, detailed comments and versioned cache without writing state to disk',async()=>{
  const previous=globalThis.fetch,calls=[];
  globalThis.fetch=async url=>{calls.push(String(url));const se=String(url).includes('stackexchange.com');return {ok:true,json:async()=>se?{items:[{question_id:1,title:discussion.title,link:'https://boardgames.stackexchange.com/questions/1/cards',body:discussion.excerpt,creation_date:1700000000}]}:{hits:[{objectID:'a',story_title:'Card games for families',comment_text:discussion.excerpt+' Other families record each round differently.',author:'example',created_at:'2026-10-07'}]}};};

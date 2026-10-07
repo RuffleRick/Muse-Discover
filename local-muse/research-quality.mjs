@@ -23,13 +23,24 @@ export function routeSearch(category,query){
  const found=rules.find(([r])=>r.test(q));return found?{category:category==='Everything'?found[1]:category,site:found[2]}:null;
 }
 export const qualityFields={sourceQuote:{type:'string',minLength:20,maxLength:350},inputs:{type:'array',minItems:1,maxItems:5,items:{type:'string',minLength:1,maxLength:300}},workflow:{type:'string',minLength:25,maxLength:700},limitations:{type:'string',minLength:15,maxLength:500}};
+export function evidenceQuotes(value){
+ if(typeof value!=='string')return [];
+ const normalize=s=>s.toLowerCase().replace(/\s+/g,' ').trim();
+ const variants=[normalize(value)];let quote=value.trim();
+ const pairs={'"':'"',"'":"'",'“':'”','‘':'’'};
+ // Only balanced outer framing is optional. Preserve every internal character.
+ for(let depth=0;depth<3&&quote.length>=2&&pairs[quote[0]]===quote.at(-1);depth++){
+  quote=quote.slice(1,-1).trim();variants.push(normalize(quote));
+ }
+ return [...new Set(variants)].filter(q=>q.length>=20&&q.length<=350);
+}
 export function checkLogic(raw,sources){
  const failures=[];
  for(const i of raw.ideas||[]){
   const first=sources.find(s=>s.id===i.sourceIds?.[0]);
   const normalize=s=>String(s||'').toLowerCase().replace(/\s+/g,' ').trim();
-  const quote=normalize(i.sourceQuote);
-  if(quote.length<20||quote.length>350||!first||!detailedSource(first)||!normalize(first.excerpt).includes(quote))failures.push('An idea lacks a verifiable excerpt from its first cited discussion.');
+  const quotes=evidenceQuotes(i.sourceQuote);
+  if(!first||!detailedSource(first)||!quotes.some(quote=>normalize(first.excerpt).includes(quote)))failures.push('An idea lacks a verifiable excerpt from its first cited discussion.');
   if(!Array.isArray(i.inputs)||!i.inputs.length||i.inputs.length>5||i.inputs.some(v=>typeof v!=='string'||!v.trim()||v.length>300)||typeof i.workflow!=='string'||i.workflow.trim().length<25||i.workflow.length>700||typeof i.limitations!=='string'||i.limitations.trim().length<15||i.limitations.length>500)failures.push('An idea does not explain its inputs, useful interaction, and limits.');
   const description=[i.pitch,i.twist,...(i.features||[])].join(' ');
   if(/\b(exact|exactly|accurate|accurately)\b/i.test(description)&&/depth of field|perspective|focal length/i.test(description)&&/upload.{0,30}(photo|image)|any.{0,15}(photo|image)/i.test(description))failures.push('An uploaded photo alone cannot support an exact alternate-lens or scene reconstruction claim.');

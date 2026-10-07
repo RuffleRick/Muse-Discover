@@ -10,6 +10,12 @@ import vm from 'node:vm';import {readFile} from 'node:fs/promises';
 const topic='card games';
 const first={id:'one',url:'https://example.com/one',title:'Card games score keeping',site:'Example',author:'Alice',authorId:'alice',discussionId:'one',excerpt:'For card games, recording round scores by hand is tedious and I have to re-enter totals every session. It disrupts our family evening and we lose the previous round totals.'};
 const second={...first,id:'two',url:'https://example.com/two',author:'Bob',authorId:'bob',discussionId:'two',excerpt:'For card games, keeping round scores in a spreadsheet is cumbersome and I have to re-enter totals every session. Our group keeps losing the totals between evenings.'};
+test('signal grounding tolerates quote framing while preserving the exact signal and first citation',()=>{
+ const quote=detectSignals(first,topic)[0].quote;
+ for(const framed of ['"'+quote+'"','“'+quote+'”',"'"+quote+"'"])assert.doesNotThrow(()=>checkSignalGrounding({ideas:[{sourceIds:['one'],sourceQuote:framed}]},[first],topic));
+ assert.throws(()=>checkSignalGrounding({ideas:[{sourceIds:['one'],sourceQuote:'"'+quote.replace('tedious','difficult')+'"'}]},[first],topic),/must quote/);
+ assert.throws(()=>checkSignalGrounding({ideas:[{sourceIds:['two'],sourceQuote:'"'+quote+'"'}]},[first,second],topic),/must quote/);
+});
 test('detects wishes, friction and forced workarounds with exact quotes',()=>{
  assert.deepEqual(new Set(detectSignals(first).map(s=>s.kind)),new Set(['complaint','workaround']));
  const wish={...first,excerpt:'I wish there were a simple way to teach card games rules to young children without overwhelming them with a long instruction booklet.'};

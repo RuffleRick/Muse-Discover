@@ -1,4 +1,4 @@
-import {words,selectSources,sourceScore} from './research-quality.mjs';
+import {words,selectSources,sourceScore,evidenceQuotes} from './research-quality.mjs';
 import {isSearchSnippet} from './reddit-search.mjs';
 const patterns={
  request:/\b(?:i wish|we wish|wish there (?:was|were)|if only|i(?:'m| am) looking for|we(?:'re| are) looking for|is there (?:an?|any) (?:app|tool|software|way)|(?:i|we) (?:need|want) (?:an?|some|better|simpler|a simple)\b|would (?:love|like) (?:an?|to)|there should be|feature request|missing (?:a |the )?feature)\b/i,
@@ -76,7 +76,7 @@ export function selectOpportunitySources(sources,topic,max=6){
 }
 export function checkSignalGrounding(raw,sources,topic,{variation=false}={}){
  const research=researchSummary(sources,topic);if(variation||!research.signals.length)return;
- for(const idea of raw.ideas||[])if(!research.signals.some(s=>s.sourceId===idea.sourceIds?.[0]&&normalize(s.quote)===normalize(idea.sourceQuote)))throw Error('Quality check stopped this roll: the idea must quote a detected complaint, wish, or workaround from its first cited source. Nothing was saved.');
+ for(const idea of raw.ideas||[])if(!research.signals.some(s=>s.sourceId===idea.sourceIds?.[0]&&evidenceQuotes(s.quote).some(quote=>evidenceQuotes(idea.sourceQuote).includes(quote))))throw Error('Quality check stopped this roll: the idea must quote a detected complaint, wish, or workaround from its first cited source. Nothing was saved.');
 }
 export function promptResearch(research){
  const seen=new Set();const signals=research.signals.filter(s=>{const key=s.sourceId+':'+s.quote;if(seen.has(key))return false;seen.add(key);return true;}).slice(0,12);
