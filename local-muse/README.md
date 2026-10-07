@@ -4,6 +4,7 @@ Open **Start Muse.cmd** (or the Muse Local desktop shortcut) on this PC.
 - **Roll fresh ideas** collects public discussions and generates three new concepts. Enter a topic first to guide the roll. Typing and category changes alone do not generate anything.
 - **Explore three new variations** uses the chosen idea's collected evidence to create new paths.
 - **Shuffle saved ideas**, browsing, pins, notes, and Codex kits require no inference.
+- **Saved library** and **Pinned** have instant search across names, descriptions, twists, audiences, features, sources, and saved notes. Search ignores capitalization and accents, and all entered words must match somewhere in the idea. **Clear** restores the complete list. Searching does not fetch sources or start the model.
 - Pin a concept, add your direction, choose a platform, and create/copy/download its Codex kit.
 - **Stop Muse** stops the app and any model job. Closing all its browser tabs also stops it after about two minutes. The browser heartbeat keeps only the lightweight web app available; it does not scan or run inference.
 

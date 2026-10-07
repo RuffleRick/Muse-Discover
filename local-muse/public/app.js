@@ -11,10 +11,24 @@ function isPinned(id){return data.pins.some(p=>p.idea.id===id);}
 function render(){
  $('pinCount').textContent=data.pins.length;
  for(const [id,v] of [['exploreNav','board'],['pinsNav','pins'],['libraryNav','library']])$(id).classList.toggle('active',view===v);
- const list=view==='pins'?data.pins.map(p=>p.idea):view==='library'?[...data.ideas].reverse():board;
+ const savedView=view==='pins'||view==='library';
+ $('generationControls').hidden=savedView;
+ $('librarySearchControls').hidden=!savedView;
+ const all=view==='pins'?data.pins.map(p=>p.idea):view==='library'?[...data.ideas].reverse():board;
+ const normalize=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+ const terms=savedView?normalize($('libraryQuery').value).trim().split(/\s+/).filter(Boolean):[];
+ const notes=new Map(data.pins.map(p=>[p.idea.id,p.note]));
+ const list=terms.length?all.filter(i=>{
+  const text=normalize([i.name,i.category,i.pitch,i.twist,i.audience,...(i.features||[]),i.evidence,i.validation,notes.get(i.id),...(i.sources||[]).flatMap(s=>[s.title,s.excerpt])].join(' '));
+  return terms.every(term=>text.includes(term));
+ }):all;
  $('heading').textContent=view==='pins'?'Keep the paths worth returning to.':view==='library'?'Every direction you’ve discovered.':'A little curiosity. A new direction.';
- $('intro').textContent=view==='pins'?'Saved locally on your PC, with your notes and a Codex starting point.':view==='library'?'Open, pin, or branch any saved concept. Browsing never starts the model.':'Find a useful twist on a familiar problem, game, or everyday task.';
- $('libraryInfo').textContent=data.ideas.length+' generated concepts in your local library · '+data.pins.length+' pinned';
+ $('intro').textContent=view==='pins'?'Search your pinned concepts and notes, or open an idea to keep exploring.':view==='library'?'Search by anything you remember, then open, pin, or branch a saved concept.':'Find a useful twist on a familiar problem, game, or everyday task.';
+ $('libraryInfo').textContent=savedView?list.length+' of '+all.length+' '+(view==='pins'?'pinned ideas':'saved concepts')+(terms.length?' match your search':'') :data.ideas.length+' generated concepts in your local library · '+data.pins.length+' pinned';
+ if(savedView&&!list.length){
+  $('board').innerHTML='<div class="empty"><h2>'+(terms.length?'No matching ideas.':view==='pins'?'Your next favorite belongs here.':'Your library is ready for its first idea.')+'</h2><p>'+(terms.length?'Try fewer words or a different detail, or clear the search to see every idea.':view==='pins'?'Pin a concept to save it here with your notes.':'Use Explore to roll your first concepts.')+'</p></div>';
+  return;
+ }
  $('board').innerHTML=list.length?list.map(i=>'<article class="card"><div class="card-top"><span class="tag">'+esc(i.category)+'</span><button class="pin '+(isPinned(i.id)?'on':'')+'" data-pin="'+esc(i.id)+'" aria-label="'+(isPinned(i.id)?'Unpin':'Pin')+' '+esc(i.name)+'">'+(isPinned(i.id)?'★':'☆')+'</button></div><button class="title-button" data-open="'+esc(i.id)+'">'+esc(i.name)+'</button><p>'+esc(i.pitch)+'</p><p class="twist">'+esc(i.twist)+'</p><div class="card-bottom"><span>'+i.sources.length+' source'+(i.sources.length===1?'':'s')+' · LOCAL AI</span><button data-open="'+esc(i.id)+'">Explore idea →</button></div></article>').join(''):'<div class="empty"><h2>'+(view==='pins'?'Your next favorite belongs here.':'Start with a roll. Or follow a curiosity.')+'</h2><p>'+(view==='pins'?'Pin a concept to save it for later.':'Try “solitaire variants,” “leftovers,” or “photography.” Muse will find discussions and generate three new directions on your PC.')+'</p><p>The model stays stopped until you ask for new ideas.</p></div>';
 }
 function find(id){return data.ideas.find(i=>i.id===id)||data.pins.find(p=>p.idea.id===id)?.idea;}
@@ -60,6 +74,8 @@ function openIdea(id){
 }
 function download(name,content,type){const url=URL.createObjectURL(new Blob([content],{type}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 $('searchForm').onsubmit=e=>{e.preventDefault();void generate();};
+$('libraryQuery').oninput=()=>render();
+$('clearLibrarySearch').onclick=()=>{$('libraryQuery').value='';render();$('libraryQuery').focus();};
 $('board').onclick=e=>{const open=e.target.closest('[data-open]');const p=e.target.closest('[data-pin]');if(open)openIdea(open.dataset.open);else if(p)void pin(p.dataset.pin,isPinned(p.dataset.pin));};
 for(const [id,v] of [['exploreNav','board'],['pinsNav','pins'],['libraryNav','library']])$(id).onclick=()=>{view=v;render();};
 $('shuffle').onclick=()=>{if(!data.ideas.length){status('Generate your first concepts with Roll fresh ideas.');return;}board=[...data.ideas].sort(()=>Math.random()-.5).slice(0,6);view='board';render();status('Shuffled saved concepts. The model stayed stopped.');};

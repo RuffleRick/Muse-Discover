@@ -22,3 +22,10 @@ Passed during consolidation on October 6, 2026:
 Folder consolidation does not need a fresh generation request. Its verification concerns paths, preserved data, and server startup. Follow-up hands-on checks: open Start Muse.cmd, browse Pinned and Saved library, and create a Codex kit.
 
 Keep future check results specific: record what ran, its outcome, and remaining limitations rather than treating prior checks as proof of new changes.
+
+## Saved search — October 6, 2026
+
+- Browser checks passed for uppercase partial-name search, multiple-word saved-note search, no-match feedback, clearing back to all 42 saved concepts, and filtering the 3 pinned ideas.
+- Inspected the dark search layout and confirmed generation controls are replaced by library search in saved views.
+- Node syntax check passed for the updated browser behavior.
+- Search uses only loaded local data and does not request generation or source collection. No saved library mutations were made during these checks.
