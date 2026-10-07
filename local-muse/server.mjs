@@ -5,17 +5,19 @@ import {randomUUID} from 'node:crypto';
 import {ROOT,DATA,load,save,text,categories,collect,makeKit} from './core.mjs';
 import {generate,stopModel,model} from './engine.mjs';
 import {explorationOptions} from './exploration.mjs';
+import {MAX_IMPORT_BYTES,exportLibrary,validateLibrary,mergeLibrary,clearGenerated,createBackup,listBackups,readBackup} from './library-tools.mjs';
 const port=3008;
 const origin='http://127.0.0.1:'+port;
 await mkdir(DATA,{recursive:true});
 let state=await load();
-let job=null,closing=false,lastSeen=Date.now();
+let job=null,closing=false,managing=false,lastSeen=Date.now();
+const backupDirectory=path.join(DATA,'backups');
 let writeQueue=Promise.resolve();
-function persist(){writeQueue=writeQueue.then(()=>save(state));return writeQueue;}
+function persist(){writeQueue=writeQueue.catch(()=>{}).then(()=>save(state));return writeQueue;}
 function reply(res,status,value){res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(JSON.stringify(value));}
-async function body(req){
+async function body(req,limit=20000){
  const chunks=[];let size=0;
- for await (const chunk of req){size+=chunk.length;if(size>20000)throw Error('Request is too large.');chunks.push(chunk);}
+ for await (const chunk of req){size+=chunk.length;if(size>limit)throw Error('Request is too large.');chunks.push(chunk);}
  return JSON.parse(Buffer.concat(chunks).toString()||'{}');
 }
 async function runJob(input){
@@ -37,7 +39,8 @@ async function runJob(input){
  }
  if(closing)throw Error('Muse is shutting down.');
  job.sources=sourceSet.sources.length;
- const ideas=await generate(sourceSet,parent,state.ideas,message=>job.message=message,input.exploration,combined);
+ const existing=[...new Map([...state.pins.map(p=>p.idea),...state.ideas].map(i=>[i.id,i])).values()];
+ const ideas=await generate(sourceSet,parent,existing,message=>job.message=message,input.exploration,combined);
  if(closing)throw Error('Muse is shutting down.');
  state.ideas.push(...ideas);
  if(state.ideas.length>5000)state.ideas=state.ideas.slice(-5000);
@@ -52,6 +55,7 @@ const server=http.createServer(async(req,res)=>{
  if(req.method==='POST'){
  if(req.headers.origin!==origin||!req.headers['content-type']?.startsWith('application/json')){reply(res,403,{error:'Open Muse locally to perform this action.'});return;}
  if(closing){reply(res,503,{error:'Muse is closing.'});return;}
+ if(managing){reply(res,409,{error:'A library operation is in progress. Please wait.'});return;}
  }
  if(url.pathname==='/api/status'&&req.method==='GET'){
  lastSeen=Date.now();reply(res,200,{app:'muse-local',job,model,libraryCount:state.ideas.length});return;
@@ -60,9 +64,32 @@ const server=http.createServer(async(req,res)=>{
  lastSeen=Date.now();
  reply(res,200,{ideas:state.ideas,pins:state.pins,categories,model,job,mode:'local-on-demand'});return;
  }
+ if(url.pathname==='/api/library/export'&&req.method==='GET'){
+ lastSeen=Date.now();reply(res,200,exportLibrary(state));return;
+ }
+ if(url.pathname==='/api/library/backups'&&req.method==='GET'){
+ lastSeen=Date.now();reply(res,200,{backups:await listBackups(backupDirectory)});return;
+ }
+ if(['/api/library/import','/api/library/backup','/api/library/restore','/api/library/clear'].includes(url.pathname)&&req.method==='POST'){
+ if(job?.state==='running'){reply(res,409,{error:'Wait for idea generation to finish before changing the library.'});return;}
+ managing=true;lastSeen=Date.now();
+ try{
+ const b=await body(req,url.pathname==='/api/library/import'?MAX_IMPORT_BYTES+10000:20000);
+ let next,reason='manual';
+ if(url.pathname==='/api/library/import'){next=mergeLibrary(state,validateLibrary(b.library));reason='pre-import';}
+ if(url.pathname==='/api/library/clear'){if(b.confirm!==true)throw Error('Confirm clearing the generated library.');next=clearGenerated(state);reason='pre-clear';}
+ if(url.pathname==='/api/library/restore'){if(b.confirm!==true)throw Error('Confirm replacing the library and pins with this backup.');next={...state,...await readBackup(backupDirectory,b.name)};reason='pre-restore';}
+ await writeQueue.catch(()=>{});
+ const backup=await createBackup(state,backupDirectory,reason);
+ if(next){await save(next);state=next;job=null;}
+ reply(res,200,{backup,ideas:state.ideas.length,pins:state.pins.length});
+ }finally{managing=false;}
+ return;
+ }
  if(url.pathname==='/api/generate'&&req.method==='POST'){
  if(job?.state==='running'){reply(res,409,{error:'A generation is already in progress.'});return;}
  const input=await body(req);
+ if(managing||job?.state==='running'){reply(res,409,{error:'Muse is busy. Please wait.'});return;}
  input.category=categories.includes(input.category)?input.category:'Everything';
  input.query=text(input.query,120);input.parentId=text(input.parentId,100);
  input.exploration=explorationOptions(input.exploration);
@@ -71,6 +98,7 @@ const server=http.createServer(async(req,res)=>{
  }
  if(url.pathname==='/api/pin'&&req.method==='POST'){
  const b=await body(req);const id=text(b.id,100);
+ if(managing){reply(res,409,{error:'A library operation is in progress. Please wait.'});return;}
  const idea=state.ideas.find(i=>i.id===id)||state.pins.find(p=>p.idea.id===id)?.idea;
  if(!idea){reply(res,404,{error:'Concept not found.'});return;}
  const index=state.pins.findIndex(p=>p.idea.id===id);

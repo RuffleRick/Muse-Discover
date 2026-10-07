@@ -26,6 +26,10 @@ The external Ollama installation and model files remain in their existing user l
 
 Any previous `data/resources.json` cache is retained as private inactive data. The app no longer reads or updates it.
 
+## Library management
+
+`library-tools.mjs` defines the Muse v1 portable format and validates imported IDs, field lengths, categories, source URLs, notes, and relationships. Export includes ideas and standalone pins, excluding internal research caches. Import merges by ID with existing data taking precedence; clear removes only `ideas`. Disk backups are atomic snapshots under `data/backups/`. Restore replaces ideas and pins while retaining internal cache settings. Import, clear, and restore create a pre-change snapshot before saving and updating the live state. A management lock blocks generation and pin changes; management is rejected while generation runs. Import bodies are size-limited, and existing localhost/Origin checks apply to all mutation routes. The collapsed Library tools menu exposes confirmations, snapshot counts, merge behavior, and restore replacement semantics.
+
 ## Hosted source
 
 `muse-app/` preserves the hosted site's source and its existing Sites project identifier. Dependencies, build output, execution caches, and nested Git metadata were excluded from the copy. It requires dependency preparation before local building. The hosted library and account pins are separate from local state. No hosting or access changes were made during consolidation.

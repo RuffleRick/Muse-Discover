@@ -6,7 +6,7 @@ async function api(route,body){
  const d=await r.json();if(!r.ok)throw Error(d.error||'Request failed.');return d;
 }
 function status(message,kind='notice'){$('status').className=kind;$('status').textContent=message;}
-function setBusy(v){busy=v;$('roll').disabled=v;$('query').disabled=v;$('category').disabled=v;$('modelStatus').textContent=v?'Generating on this PC':'Model stopped';}
+function setBusy(v){busy=v;$('roll').disabled=v;$('query').disabled=v;$('category').disabled=v;$('modelStatus').textContent=v?'Generating on this PC':'Model stopped';syncTools();}
 function isPinned(id){return data.pins.some(p=>p.idea.id===id);}
 function render(){
  $('pinCount').textContent=data.pins.length;
@@ -104,3 +104,25 @@ $('stop').onclick=async()=>{try{await api('/api/stop',{});}finally{stopped=true;
 const heartbeat=setInterval(()=>{if(!busy&&!stopped)api('/api/status').catch(()=>{});},20000);
 load().then(()=>{if(data.job?.state==='running'){setBusy(true);jobId=data.job.id;poll=setInterval(checkJob,1500);}}).catch(e=>status(e.message,'error'));
 
+
+let toolsBusy=false,backups=[];
+const toolIds=['exportLibrary','importLibrary','createBackup','restoreBackup','clearGenerated','backupChoice','importFile'];
+function syncTools(){for(const id of toolIds)$(id).disabled=busy||stopped||toolsBusy; if(!busy&&!stopped&&!toolsBusy)$('restoreBackup').disabled=!$('backupChoice').value;}
+function toolsStatus(message){$('toolsStatus').textContent=message;}
+async function refreshBackups(){
+ try{const d=await api('/api/library/backups');backups=d.backups;const selected=$('backupChoice').value;$('backupChoice').innerHTML='<option value="">'+(backups.length?'Choose a backup':'No backups yet')+'</option>'+backups.map(b=>'<option value="'+esc(b.name)+'">'+esc(new Date(b.createdAt).toLocaleString()+' · '+b.ideas+' ideas / '+b.pins+' pins · '+({'manual':'manual','pre-import':'before import','pre-clear':'before clearing','pre-restore':'before restore'}[b.reason]||'backup'))+'</option>').join('');if(backups.some(b=>b.name===selected))$('backupChoice').value=selected;syncTools();}catch(e){toolsStatus(e.message);}
+}
+async function libraryOperation(route,payload,message,changes=true){
+ if(busy||stopped||toolsBusy)return;toolsBusy=true;syncTools();toolsStatus('Working…');
+ try{await api(route,payload);if(changes){board=[];view='library';$('libraryQuery').value='';$('detail').close();await load();}await refreshBackups();toolsStatus(message);status(message);}
+ catch(e){toolsStatus(e.message);}finally{toolsBusy=false;syncTools();}
+}
+$('libraryTools').addEventListener('toggle',()=>{if($('libraryTools').open)void refreshBackups();});
+$('backupChoice').onchange=syncTools;
+$('exportLibrary').onclick=async()=>{if(busy||stopped||toolsBusy)return;toolsBusy=true;syncTools();try{const library=await api('/api/library/export');download('muse-library-'+new Date().toISOString().replace(/[:.]/g,'-')+'.json',JSON.stringify(library,null,2),'application/json');toolsStatus('Library export downloaded. Keep it somewhere safe.');}catch(e){toolsStatus(e.message);}finally{toolsBusy=false;syncTools();}};
+$('importLibrary').onclick=()=>{if(!busy&&!stopped&&!toolsBusy)$('importFile').click();};
+$('importFile').onchange=async()=>{const file=$('importFile').files[0];$('importFile').value='';if(!file||busy||stopped||toolsBusy)return;try{if(file.size>20*1024*1024)throw Error('Choose a library export smaller than 20 MB.');const library=JSON.parse(await file.text());if(library.format!=='muse-library'||library.version!==1||!Array.isArray(library.ideas)||!Array.isArray(library.pins))throw Error('Choose a Muse library export (version 1).');if(!confirm('Merge '+library.ideas.length+' ideas and '+library.pins.length+' pins into Muse? Existing items and notes will be kept when IDs match. A backup is created first.'))return;await libraryOperation('/api/library/import',{library},'Import complete. Existing items and pin notes were preserved.');}catch(e){toolsStatus(e.message);}};
+$('createBackup').onclick=()=>void libraryOperation('/api/library/backup',{},'Backup saved on this PC.',false);
+$('restoreBackup').onclick=()=>{const backup=backups.find(b=>b.name===$('backupChoice').value);if(!backup||busy||stopped||toolsBusy)return;if(confirm('Restore '+new Date(backup.createdAt).toLocaleString()+'? Your library and pins will be replaced with '+backup.ideas+' ideas and '+backup.pins+' pins from that backup. The current state is backed up first, so you can undo this.'))void libraryOperation('/api/library/restore',{name:backup.name,confirm:true},'Backup restored. Your previous state is available in backups.');};
+$('clearGenerated').onclick=()=>{if(busy||stopped||toolsBusy)return;if(confirm('Clear all '+data.ideas.length+' generated-library ideas? All '+data.pins.length+' pins and their notes will remain. Muse creates a backup first so you can restore the cleared ideas.'))void libraryOperation('/api/library/clear',{confirm:true},'Generated library cleared. Your pins and notes are kept; a backup is available.');};
+syncTools();

@@ -67,3 +67,11 @@ Keep future check results specific: record what ran, its outcome, and remaining 
 - Started the updated local server and verified both GET /api/resources and POST /api/resources/refresh return HTTP 404.
 - Restored the original centered layout rules. Visual browser verification could not run because the in-app browser was unavailable.
 - Personal library and resource cache were not edited, and no model generation was requested.
+
+## Library tools — October 7, 2026
+
+- Eight tests passed across exploration and library tools. Tests cover export roundtrip, pin/note/source/branch preservation, conflict-safe repeatable merges, pin-only conflicts after clear, malformed imports, unsafe URLs, disk backup restoration, restoration undo, and backup path validation. Disk tests use isolated temporary folders.
+- Browser and server syntax checks passed. The current private library validates against the portable format without edits.
+- Live export returned all 83 generated ideas and 4 pins. A manual backup was created and listed. A malformed import returned 400; a foreign-Origin clear request returned 403. The library file hash remained unchanged, and the model service remained stopped.
+- Clear and restore were exercised on isolated test data, not the user’s private library.
+- No browsers were available through the UI tool, so visual verification and native file-picker testing could not be performed.

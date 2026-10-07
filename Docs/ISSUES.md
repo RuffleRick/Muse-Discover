@@ -7,7 +7,7 @@
 - Access is local to this PC; mobile and LAN access are not enabled.
 - Codex kits use a fixed template. They do not independently verify feasibility or market demand.
 - Small local-model outputs can still be overambitious or need editing.
-- No in-app export/import, collections, or persistent idea-tree view yet.
+- Collections and tags are not implemented. Export/import, local backup restoration, and saved idea-tree navigation are available.
 - This project is inside OneDrive; personal state may sync according to existing OneDrive settings. Avoid running simultaneous app instances from synchronized copies.
 - The Node launcher currently prefers the installed Codex runtime, with a PATH Node fallback. A standalone runtime package remains optional future work.
 

@@ -24,3 +24,15 @@ Troubleshooting: see data/server-errors.log and data/model.log. Reopen Start Mus
 ## Deeper brainstorming
 
 Open any idea, fill in **Keep this**, **Change that**, optional constraints and audience, choose **Focused**, **Balanced**, or **Wild**, and optionally combine it with another saved idea. Click **Explore three new variations** to run the local model. New concepts keep the original family and save the direction used. The **Idea tree** opens older and new paths without generation; each can be pinned or explored further. Existing saved variations also appear. Combination references connect the second idea without moving its original tree. Generated directions guide the model rather than guaranteeing compliance, so review the output. Codex kits carry forward recorded constraints.
+
+## Library tools
+
+The expandable **Library tools** menu stays closed until you need it and provides room for future management functions.
+
+- **Export library:** downloads a versioned JSON file containing generated ideas, pinned snapshots, notes, sources, and branch relationships. Keep a copy outside this project for recovery if the PC or project folder is lost.
+- **Import library:** accepts Muse version 1 exports up to 20 MB and merges by idea ID. Existing ideas and pin notes win on conflicts. The resulting library is limited to 5,000 ideas and 5,000 pins. Invalid files are rejected before changes.
+- **Create backup:** saves a local snapshot in `data/backups/`, excluded from GitHub. Backups are retained until you manage them; they use storage on this PC and are not a replacement for an external export.
+- **Restore selected backup:** replaces generated ideas and pins with that snapshot after confirmation. Muse first backs up the current state so the restoration can be undone by restoring that newer snapshot.
+- **Clear generated library · keep pins:** removes all generated-library tiles, including their unpinned branches. Pinned snapshots and notes remain available under Pinned and can still be explored or exported. Muse creates a backup first; restore it to recover the cleared paths.
+
+Import, clear, and restore require a successfully written pre-change backup. Library changes are blocked during generation and serialized against other management actions. These tools do not start the model or fetch public sources.

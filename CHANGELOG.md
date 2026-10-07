@@ -19,3 +19,5 @@
 ## October 7, 2026
 
 - Removed the Learning sidebar, navigation toggle, daily resource searches, and resource API endpoints. Restored the centered layout and retained private saved ideas, pins, and the inactive resource cache.
+
+- Added an expandable Library tools hub with portable JSON export/import, manual and automatic pre-change backups, snapshot restoration, and clearing generated ideas while preserving standalone pins and notes. Import merges by ID and restoration can be undone through its pre-change snapshot.
