@@ -1,0 +1,11 @@
+# Changelog
+
+## October 6, 2026
+
+- Created the private brainstorming experience and Codex kit workflow.
+- Added a local, on-demand model and public-source collection.
+- Added desktop launch access and recorded a short functionality tour.
+- Preserved the original theme, then applied Forest Room's centered layout with Midnight colors.
+- Corrected the misleading Ollama access error and verified branching from a pinned idea.
+- Consolidated the working app, saved local state, original theme backup, hosted source snapshot, and project documentation into Muse-Discover.
+- Prepared the public GitHub source repository with private state/media exclusions and a documented commit-and-push policy for completed future features and fixes.

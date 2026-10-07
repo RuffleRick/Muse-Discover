@@ -1,0 +1,3 @@
+Original Muse Local theme, saved October 6, 2026 before any theme changes.
+To restore: stop Muse, copy index.html, style.css, and app.js from this folder into C:\Users\richa\OneDrive\Documents\ChatGPT\Muse-Discover\local-muse\public, then reopen Muse.
+This backup covers the original interface. Your ideas and pins remain in local-muse\data\library.json.

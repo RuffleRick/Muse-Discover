@@ -1,0 +1,48 @@
+# Muse Discover
+
+Private, local, on-demand brainstorming for games, apps, tools, and everyday problems.
+
+Public source: [RuffleRick/Muse-Discover](https://github.com/RuffleRick/Muse-Discover). Personal library data and private tour media are excluded. See [GitHub workflow](Docs/GITHUB.md) for the authorized feature-update process.
+
+**Start here:** double-click **Start Muse.cmd** in this folder, or use the **Muse Local** desktop shortcut. Muse opens at http://127.0.0.1:3008 on this PC.
+
+This folder is the main Muse project:
+`C:\Users\richa\OneDrive\Documents\ChatGPT\Muse-Discover`
+
+## Current functionality
+
+- Search public discussions and roll three new concepts using the local model.
+- Explore three variations of a selected or pinned concept.
+- Browse and shuffle saved concepts without generation.
+- Pin ideas and save personal notes.
+- Create, copy, or download a Codex opening prompt and build workflow.
+- Stop Muse from the app. Closing every Muse tab also stops it after about two minutes.
+
+The interface uses Forest Room's centered layout with Midnight's slate blue palette. The original interface is preserved in `backups/original-theme-2026-10-06`.
+
+## Project folders
+
+| Location | Purpose |
+| --- | --- |
+| `local-muse/` | Active local app: server, model integration, source collection, and interface |
+| `local-muse/public/` | Interface markup, styles, and browser behavior |
+| `local-muse/data/` | Private saved ideas, pins, source cache, and diagnostic logs |
+| `Docs/` | Architecture, roadmap, limitations, and verification notes |
+| `backups/` | Original theme and restoration instructions |
+| `muse-app/` | Source snapshot of the separate hosted Muse site |
+
+## Operation and privacy
+
+Muse uses the installed Ollama runtime and `qwen3.5:4b`. It starts the model only for an explicit roll or variation request, then stops its owned model process tree. It has no automatic scanner or scheduled generation and no paid cloud fallback.
+
+Source collection currently uses Hacker News and Stack Exchange. Reddit is not connected. Public discussions inspire ideas; they do not prove novelty, demand, or low competition.
+
+The local app and hosted site have separate libraries. The hosted site is not updated by editing or starting this local project.
+
+## Protect your ideas
+
+Back up `local-muse/data/library.json` before moving, uninstalling, or restoring the project. OneDrive may synchronize this project folder, including that private data, according to your existing OneDrive settings. Local model inference still happens on this PC.
+
+The older `C:\Users\richa\Muse` folder is retained as a fallback snapshot. Launchers have been redirected to this project; use this project's data and source for future work.
+
+See [architecture](Docs/ARCHITECTURE.md), [roadmap](Docs/ROADMAP.md), [limitations](Docs/ISSUES.md), and [verification notes](Docs/VERIFICATION.md).

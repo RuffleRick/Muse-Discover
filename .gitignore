@@ -1,0 +1,22 @@
+# Personal state and runtime output; keep these on disk, outside source history.
+local-muse/data/
+local-muse/setup/
+*.log
+.env
+.env.*
+node_modules/
+.next/
+.vinext/
+.wrangler/
+dist/
+.sites-runtime/
+*.tsbuildinfo
+outputs/
+work/
+.agents/
+.codex/
+# Private tour media and machine-specific hosting configuration.
+muse-app/public/muse-tour*
+muse-app/.openai/
+*.pem
+*.key

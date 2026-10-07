@@ -1,0 +1,71 @@
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let data={ideas:[],pins:[]},board=[],view='board',selected=null,busy=false,jobId=null,poll=null,stopped=false;
+async function api(route,body){
+ const r=await fetch(route,body===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+ const d=await r.json();if(!r.ok)throw Error(d.error||'Request failed.');return d;
+}
+function status(message,kind='notice'){$('status').className=kind;$('status').textContent=message;}
+function setBusy(v){busy=v;$('roll').disabled=v;$('query').disabled=v;$('category').disabled=v;$('modelStatus').textContent=v?'Generating on this PC':'Model stopped';}
+function isPinned(id){return data.pins.some(p=>p.idea.id===id);}
+function render(){
+ $('pinCount').textContent=data.pins.length;
+ for(const [id,v] of [['exploreNav','board'],['pinsNav','pins'],['libraryNav','library']])$(id).classList.toggle('active',view===v);
+ const list=view==='pins'?data.pins.map(p=>p.idea):view==='library'?[...data.ideas].reverse():board;
+ $('heading').textContent=view==='pins'?'Keep the paths worth returning to.':view==='library'?'Every direction you’ve discovered.':'A little curiosity. A new direction.';
+ $('intro').textContent=view==='pins'?'Saved locally on your PC, with your notes and a Codex starting point.':view==='library'?'Open, pin, or branch any saved concept. Browsing never starts the model.':'Find a useful twist on a familiar problem, game, or everyday task.';
+ $('libraryInfo').textContent=data.ideas.length+' generated concepts in your local library · '+data.pins.length+' pinned';
+ $('board').innerHTML=list.length?list.map(i=>'<article class="card"><div class="card-top"><span class="tag">'+esc(i.category)+'</span><button class="pin '+(isPinned(i.id)?'on':'')+'" data-pin="'+esc(i.id)+'" aria-label="'+(isPinned(i.id)?'Unpin':'Pin')+' '+esc(i.name)+'">'+(isPinned(i.id)?'★':'☆')+'</button></div><button class="title-button" data-open="'+esc(i.id)+'">'+esc(i.name)+'</button><p>'+esc(i.pitch)+'</p><p class="twist">'+esc(i.twist)+'</p><div class="card-bottom"><span>'+i.sources.length+' source'+(i.sources.length===1?'':'s')+' · LOCAL AI</span><button data-open="'+esc(i.id)+'">Explore idea →</button></div></article>').join(''):'<div class="empty"><h2>'+(view==='pins'?'Your next favorite belongs here.':'Start with a roll. Or follow a curiosity.')+'</h2><p>'+(view==='pins'?'Pin a concept to save it for later.':'Try “solitaire variants,” “leftovers,” or “photography.” Muse will find discussions and generate three new directions on your PC.')+'</p><p>The model stays stopped until you ask for new ideas.</p></div>';
+}
+function find(id){return data.ideas.find(i=>i.id===id)||data.pins.find(p=>p.idea.id===id)?.idea;}
+async function load(){data=await api('/api/state');if(!board.length)board=data.ideas.slice(-3);render();}
+async function pin(id,remove,note){try{const d=await api('/api/pin',{id,remove,note:note??data.pins.find(p=>p.idea.id===id)?.note??''});data.pins=d.pins;render();if(selected?.id===id && $('detailPin'))$('detailPin').textContent=isPinned(id)?'Unpin idea':'Pin for later';status(remove?'Idea unpinned.':'Idea and notes saved on this PC.');}catch(e){status(e.message,'error');}}
+async function generate(parentId){
+ if(busy||stopped)return;
+ setBusy(true);status('Finding discussions and starting local generation…','working');
+ try{
+ const d=await api('/api/generate',{category:$('category').value,query:$('query').value,parentId});
+ jobId=d.job.id;poll=setInterval(checkJob,1500);
+ }catch(e){setBusy(false);status(e.message,'error');}
+}
+async function checkJob(){
+ try{
+ const d=await api('/api/status');
+ const j=d.job;if(!j||j.id!==jobId)return;
+ status(j.message,j.state==='error'?'error':j.state==='running'?'working':'notice');
+ if(j.state!=='running'){
+ clearInterval(poll);poll=null;setBusy(false);
+ await load();
+ if(j.state==='done'){board=j.ideas;view='board';render();status(j.message+(j.warnings?.length?' '+j.warnings.join(' '):''));}
+ }
+ }catch(e){clearInterval(poll);poll=null;setBusy(false);status('Muse stopped or disconnected. Reopen it with Start Muse.cmd.','error');}
+}
+function openIdea(id){
+ selected=find(id);if(!selected)return;
+ const i=selected;
+ $('detailCategory').textContent=i.category+' · Generated '+new Date(i.generatedAt).toLocaleDateString();
+ $('detailBody').innerHTML='<h2>'+esc(i.name)+'</h2><p>'+esc(i.pitch)+'</p><h3>The twist</h3><p>'+esc(i.twist)+'</p><h3>Who it’s for</h3><p>'+esc(i.audience)+'</p><h3>The first useful version</h3><ul>'+i.features.map(f=>'<li>'+esc(f)+'</li>').join('')+'</ul><div class="actions"><button id="branch" class="primary" '+(busy?'disabled':'')+'>Explore three new variations</button><button id="detailPin" class="secondary">'+(isPinned(i.id)?'Unpin idea':'Pin for later')+'</button></div><h3>What inspired this</h3><p>'+esc(i.evidence)+'</p>'+i.sources.map(s=>'<div class="source"><a href="'+esc(s.url)+'" target="_blank" rel="noopener noreferrer">'+esc(s.title)+'</a><p>'+esc(s.excerpt)+'</p><small>'+esc(s.site)+' · '+esc(s.author)+' · fetched '+new Date(s.retrievedAt).toLocaleDateString()+(s.license?' · '+esc(s.license):'')+'</small></div>').join('')+'<h3>Validate before building</h3><p>'+esc(i.validation)+'</p><h3>Your Codex starting point</h3><div class="kit-settings"><label for="platform">Build as</label><select id="platform"><option value="web app">Web app</option><option value="desktop tool">Desktop tool</option><option value="Unity game prototype">Unity game prototype</option></select><label for="note">Your direction</label><textarea id="note" maxlength="2000" placeholder="Focus, style, features, or constraints…">'+esc(data.pins.find(p=>p.idea.id===i.id)?.note||'')+'</textarea></div><div class="actions"><button id="saveNote" class="secondary">Pin idea and notes</button><button id="makeKit" class="secondary">Create Codex kit</button></div><section id="kit"></section>';
+ $('branch').onclick=()=>{$('detail').close();void generate(i.id);};
+ $('detailPin').onclick=async()=>{await pin(i.id,isPinned(i.id));$('detailPin').textContent=isPinned(i.id)?'Unpin idea':'Pin for later';};
+ $('saveNote').onclick=()=>void pin(i.id,false,$('note').value);
+ $('makeKit').onclick=async()=>{
+ try{
+ const k=await api('/api/kit',{id:i.id,platform:$('platform').value,note:$('note').value});
+ $('kit').innerHTML='<h3>Opening prompt</h3><pre>'+esc(k.prompt)+'</pre><h3>Build workflow</h3><ol>'+k.workflow.map(s=>'<li>'+esc(s)+'</li>').join('')+'</ol><div class="actions"><button id="copyKit" class="primary">Copy complete kit</button><button id="downloadKit" class="secondary">Download kit</button></div>';
+ $('copyKit').onclick=async()=>{try{await navigator.clipboard.writeText(k.text);$('copyKit').textContent='Copied';}catch{$('copyKit').textContent='Use Download kit';}};
+ $('downloadKit').onclick=()=>download(i.name+'-codex-kit.txt',k.text,'text/plain');
+ }catch(e){$('kit').textContent=e.message;}
+ };
+ $('detail').showModal();
+}
+function download(name,content,type){const url=URL.createObjectURL(new Blob([content],{type}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+$('searchForm').onsubmit=e=>{e.preventDefault();void generate();};
+$('board').onclick=e=>{const open=e.target.closest('[data-open]');const p=e.target.closest('[data-pin]');if(open)openIdea(open.dataset.open);else if(p)void pin(p.dataset.pin,isPinned(p.dataset.pin));};
+for(const [id,v] of [['exploreNav','board'],['pinsNav','pins'],['libraryNav','library']])$(id).onclick=()=>{view=v;render();};
+$('shuffle').onclick=()=>{if(!data.ideas.length){status('Generate your first concepts with Roll fresh ideas.');return;}board=[...data.ideas].sort(()=>Math.random()-.5).slice(0,6);view='board';render();status('Shuffled saved concepts. The model stayed stopped.');};
+$('close').onclick=()=>$('detail').close();
+$('detail').onclick=e=>{if(e.target===$('detail')){const r=$('detail').getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)$('detail').close();}};
+$('stop').onclick=async()=>{try{await api('/api/stop',{});}finally{stopped=true;clearInterval(poll);clearInterval(heartbeat);setBusy(false);$('detail').close();$('roll').disabled=true;$('stop').disabled=true;$('modelStatus').textContent='Muse stopped';status('Muse is stopped. Your library and pins are saved. Reopen with Start Muse.cmd.');}};
+const heartbeat=setInterval(()=>{if(!busy&&!stopped)api('/api/status').catch(()=>{});},20000);
+load().then(()=>{if(data.job?.state==='running'){setBusy(true);jobId=data.job.id;poll=setInterval(checkJob,1500);}}).catch(e=>status(e.message,'error'));
+
