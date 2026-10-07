@@ -40,3 +40,13 @@ Keep future check results specific: record what ran, its outcome, and remaining 
 - Cached picks loaded while all network fetching was deliberately disabled in a separate read-only check.
 - Browser checks verified 3 video results, collapse/expand state, and the dark desktop sidebar layout.
 - Confirmed the model service remained stopped during the refresh checks; no idea generation was requested.
+
+## Automatic daily learning — October 6, 2026
+
+- Four Node tests passed for public HTTPS links, instructional/development relevance, five-item selection and deduplication, publisher diversity, unseen-link preference, and local calendar dates.
+- Browser and server syntax checks passed; Git diff whitespace checks passed.
+- Opening the browser automatically searched DEV Community and Hacker News; the final selection contained five links across four publishers.
+- Browser inspection confirmed five links and no input, select, or button inside the feed.
+- A repeated same-day request reused the refresh timestamp; the model service remained stopped.
+- An integration check confirmed the idea library was unchanged by resource refresh.
+- Date rollover is implemented through the open-tab heartbeat and covered by calendar-date unit checks; a real overnight session was not run.

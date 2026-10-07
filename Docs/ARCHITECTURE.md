@@ -4,7 +4,7 @@
 
 `Start Muse.cmd` delegates to `local-muse/Start Muse.cmd`, which runs `Start-Muse.ps1`. The launcher starts the Node server in its own app directory, waits for readiness, and opens the browser. It reuses an already-running Muse server.
 
-`server.mjs` serves the interface on `127.0.0.1:3008`, validates Host and POST Origin, manages generation jobs, and persists state. A browser heartbeat keeps the lightweight server available while tabs are open; it does not run inference or research. Stop Muse ends the server and its owned model job.
+`server.mjs` serves the interface on `127.0.0.1:3008`, validates Host and POST Origin, manages generation jobs, and persists state. A browser heartbeat keeps the lightweight server available while tabs are open; it does not run inference. The browser also checks whether the daily learning feed is due. Stop Muse ends the server and its owned model job.
 
 `core.mjs` collects public sources, maintains caching and backoff, validates concepts, and builds Codex kits from a fixed template. Its storage location is relative to the source file, so moving the complete app directory preserves its behavior.
 
@@ -12,7 +12,7 @@
 
 `public/index.html`, `public/style.css`, and `public/app.js` contain the interface. Theme changes preserve the DOM IDs used by the existing browser behavior.
 
-`resource-feed.mjs` reads three official OpenAI Markdown indexes only on `POST /api/resources/refresh`. `GET /api/resources` loads a local cache or verified starter links without network access. Successful checks are reused for the local calendar day; simultaneous refreshes share one request and failed attempts have a short cooldown. Requests have time and size limits, redirects are rejected, and outgoing resource links are restricted to official learning pages or valid YouTube watch links. Titles are escaped by the browser renderer. Daily rotation provides up to three links per type without claiming publication dates. The sidebar can be collapsed, and its visibility preference is stored in the browser.
+`resource-feed.mjs` searches DEV Community’s Codex-tag article API and the Hacker News Algolia story index on `POST /api/resources/refresh`. The browser requests it automatically on opening and after local date rollover while a tab remains open. `GET /api/resources` reads only the local cache. A versioned cache records each calendar day’s attempt, including failure, and concurrent refreshes share one request. The selector deduplicates URLs, prefers unseen links using a bounded 100-URL history, favors varied publishers, and returns up to five results. Title filters require both Codex development context and learning/workflow context. Requests have timeout and size limits and reject redirects. Public HTTPS result links are validated and titles are escaped; destination pages are not fetched automatically. No model, scheduler, or paid API is involved. The sidebar’s collapse preference remains in browser storage.
 
 ## Data
 

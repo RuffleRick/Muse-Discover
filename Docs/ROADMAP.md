@@ -1,6 +1,6 @@
 # Optional roadmap
 
-These are proposals, not implemented features or scheduled work. Keep generation manual, private, and local by default.
+These are proposals, not implemented features or scheduled work. Keep idea generation manual, private, and local by default.
 
 | Priority | Direction | Proposed features | Completion target |
 | --- | --- | --- | --- |
