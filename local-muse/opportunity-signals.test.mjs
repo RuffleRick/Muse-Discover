@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {detectSignals,researchSummary,selectOpportunitySources,checkSignalGrounding} from './opportunity-signals.mjs';
 import {exportLibrary,validateLibrary,createBackup,readBackup} from './library-tools.mjs';
 import {makeKit} from './core.mjs';
-import {generationPrompt} from './engine.mjs';
+import {generationPrompt,bindEvidence} from './engine.mjs';
 import {mkdtemp,rm} from 'node:fs/promises';
 import os from 'node:os';import path from 'node:path';
 import vm from 'node:vm';import {readFile} from 'node:fs/promises';
@@ -15,6 +15,20 @@ test('signal grounding tolerates quote framing while preserving the exact signal
  for(const framed of ['"'+quote+'"','“'+quote+'”',"'"+quote+"'"])assert.doesNotThrow(()=>checkSignalGrounding({ideas:[{sourceIds:['one'],sourceQuote:framed}]},[first],topic));
  assert.throws(()=>checkSignalGrounding({ideas:[{sourceIds:['one'],sourceQuote:'"'+quote.replace('tedious','difficult')+'"'}]},[first],topic),/must quote/);
  assert.throws(()=>checkSignalGrounding({ideas:[{sourceIds:['two'],sourceQuote:'"'+quote+'"'}]},[first,second],topic),/must quote/);
+});
+test('model quote options are literal source slices and fresh need-led options are detected signals',()=>{
+ const prompt=generationPrompt({sources:[first,second],term:topic,category:'Games'});
+ for(const s of prompt.sources){const source=[first,second].find(x=>x.id===s.id);for(const {quote} of s.allowedEvidence){assert.ok(source.excerpt.includes(quote));assert.ok(detectSignals(source,topic).some(signal=>signal.quote===quote));}}
+ assert.match(prompt.quoteSelection,/FIRST/);
+ const interest={...first,excerpt:'Card games are a favorite activity in our family. We enjoy learning different scoring systems and sharing an evening together with friends.'};
+ const creative=generationPrompt({sources:[interest],term:topic,category:'Games'});assert.ok(creative.sources[0].allowedEvidence.length);for(const {quote} of creative.sources[0].allowedEvidence)assert.ok(interest.excerpt.includes(quote));
+});
+test('selected evidence binds an exact quote to its source and retains secondary citations',()=>{
+ const prompt=generationPrompt({sources:[first,second],term:topic,category:'Games'}),options=prompt.sources.flatMap(s=>s.allowedEvidence),selected=options[0];
+ const raw=bindEvidence({ideas:[{evidenceId:selected.id,sourceIds:['two','one']}]},options);
+ assert.equal(raw.ideas[0].sourceQuote,selected.quote);assert.deepEqual(raw.ideas[0].sourceIds,['one','two']);assert.equal(raw.ideas[0].evidenceId,undefined);
+ assert.doesNotThrow(()=>checkSignalGrounding(raw,[first,second],topic));
+ for(const evidenceId of ['invented',undefined])assert.throws(()=>bindEvidence({ideas:[{evidenceId,sourceIds:['one']}]},options),/did not select/);
 });
 test('detects wishes, friction and forced workarounds with exact quotes',()=>{
  assert.deepEqual(new Set(detectSignals(first).map(s=>s.kind)),new Set(['complaint','workaround']));

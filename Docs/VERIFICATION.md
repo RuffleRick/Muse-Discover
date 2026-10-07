@@ -6,6 +6,9 @@
 - Added regression coverage for straight/curly single/double framing, nested framing, unbalanced/mismatched marks, changed words, short/oversized quotes, and incorrect first-source citations. Need-signal checks use the same framing rules and continue rejecting altered quotes and wrong sources.
 - All 42 regression checks passed. Diagnostic captures remain private in ignored data; no private source excerpts or model outputs are committed.
 
+- Subsequent native rolls exposed genuine quote paraphrasing. Generation now selects an evidence ID; Muse binds its literal text and corresponding first source before the existing checks. Two additional tests verify literal options, source binding, secondary citations, and rejection of unknown IDs. All 44 regression checks, syntax, and diff checks passed.
+- A native `/api/generate` request for `roguelite` successfully saved three concepts after this change and reported the model stopped. No conversation search results were supplied. Generated quotes matched stored excerpts; output still showed weak semantic relevance between selected evidence and some ideas. Literal verification does not validate the model's interpretation or creative quality.
+
 ## Reddit search-provider integration — October 7, 2026
 
 - All 40 regression checks passed, including nine new mocked search tests. Syntax checks passed for all local `.mjs` files and the browser app script; `git diff --check` passed. An existing collection test was updated for the new versioned cache key. Initial sandbox disk tests hit permission errors on atomic rename; the same tests passed with normal filesystem access.
