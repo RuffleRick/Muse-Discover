@@ -46,4 +46,6 @@ The current small local model can still overlook constraints or suggest impracti
 
 ## Mobile access
 
+**In progress, not complete.** Tailscale installation is waiting for Windows administrator approval. Resume at the home PC; account/device setup and a real phone connection test remain. The following controls are built but remote access is not yet operational.
+
 **Library tools → Mobile access** provides connection status, enable/new pairing code, and disable/revoke controls. Install Tailscale on the PC and phone, sign in to the same private account, and enable HTTPS certificates. Enable mobile access on the PC, then open the displayed HTTPS address on the connected phone and enter the code. Codes expire after ten minutes and are single-use; browser sessions last up to twelve hours. New codes do not revoke existing paired browsers. Disable access revokes all sessions; phone Disconnect logs out that browser without stopping Muse. Mobile access must be enabled again after restarting Muse. Full setup and limitations: [Mobile access](../Docs/MOBILE-ACCESS.md).

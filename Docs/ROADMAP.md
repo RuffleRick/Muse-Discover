@@ -9,7 +9,7 @@ Rows marked Implemented describe available features; the remaining rows are prop
 | Next | Stronger research | User-supplied links, more public sources, Reddit access evaluation, recurring-problem grouping, evidence snapshots | Explain which observations support an idea and which claims remain uncertain |
 | Later | Choosing projects | Shortlist comparisons, smallest useful version, assumption checks, competitor research, validation experiments | Each shortlisted project has a manageable prototype and a concrete value test |
 | Later | Codex practice | Guided briefs, acceptance criteria, prompt refinement, debugging exercises, Git practice, project retrospectives | Complete prototypes and record reusable lessons |
-| Implemented · setup required | Mobile access | Private Tailscale HTTPS, one-time pairing, phone disconnect, desktop revocation | Browse and generate away from home after PC/phone account setup; physical-phone testing pending |
+| In progress · not complete | Mobile access | App-side private Tailscale HTTPS and pairing are built. Installation is waiting for Windows administrator approval; account/device setup and phone testing remain | Resume at the home PC: approve installation, sign in on PC/phone, enable HTTPS, pair, and verify cellular access |
 | Optional | Expansion | Project-folder exports, model comparisons, creative reference boards | Expand access or depth while preserving intentional generation |
 
 Suggested next feature release: tags and status, clearer evidence, and stronger Codex kits with acceptance criteria.

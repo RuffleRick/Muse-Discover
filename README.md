@@ -53,4 +53,4 @@ See [architecture](Docs/ARCHITECTURE.md), [roadmap](Docs/ROADMAP.md), [limitatio
 
 ## Optional mobile access
 
-Open **Library tools → Mobile access** on the PC. Muse supports private phone access at home or away using Tailscale and a one-time pairing code. PC/phone installation and account setup are required; mobile access stays off until enabled. See [Mobile setup](Docs/MOBILE-ACCESS.md). The PC must stay awake; the model remains on demand.
+**In progress, not complete.** The app-side controls are built under **Library tools → Mobile access**, but Tailscale installation is waiting for Windows administrator approval. Account setup and an actual phone connection test remain. Resume at the home PC using [Mobile setup](Docs/MOBILE-ACCESS.md). The PC must stay awake; the model remains on demand.

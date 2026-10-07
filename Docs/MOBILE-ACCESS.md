@@ -1,6 +1,10 @@
 # Private mobile access
 
-Muse can be reached on your phone at home or away. Its ideas and model stay on the home PC. Access uses [Tailscale Serve](https://tailscale.com/docs/features/tailscale-serve), which shares HTTPS services only inside your private Tailscale network. Muse adds browser pairing before allowing library access.
+**Status: in progress, not complete.** App-side access and pairing are built and covered by automated checks. The Tailscale installer was downloaded and verified, but installation is waiting for Windows administrator approval. Automated approval attempts did not dismiss the prompt, and installation has not been confirmed. Work is on hold until the user returns to the home PC.
+
+Resume by approving the pending installer (or restarting it if the prompt has expired), confirming installation, signing in on the PC and phone, enabling HTTPS, and testing pairing and cellular access. Do not mark remote access complete until the actual phone connection and disable/revocation behavior are verified.
+
+After setup, Muse is designed to be reachable on your phone at home or away. Its ideas and model stay on the home PC. Access uses [Tailscale Serve](https://tailscale.com/docs/features/tailscale-serve), which shares HTTPS services only inside your private Tailscale network. Muse adds browser pairing before allowing library access.
 
 ## First-time setup
 
