@@ -18,6 +18,7 @@ This folder is the main Muse project:
 - Open **Library tools** for JSON export/import, local backups and restoration, or clearing generated ideas while keeping pins.
 - New ideas include prototype inputs, workflow, limits, and a cited discussion excerpt. A roll returns up to three concepts and rejects known unsupported claims before saving.
 - Explore an idea with keep/change instructions, constraints, audience adaptation, creativity levels, and combinations. Revisit saved branches in its idea tree.
+- Open an idea's **Try a brainstorming direction** menu for eight editable starting directions. **Use this direction** fills Change that, plus empty audience/constraint fields when applicable; **Explore new variations** starts generation. **Compare saved paths** shows up to three retained paths side by side, and branches show **What changed from the parent**. These browsing controls do not run the model.
 - Pin ideas and save personal notes.
 - Create, copy, or download a Codex opening prompt and build workflow.
 - Stop Muse from the app. Closing every Muse tab also stops it after about two minutes.

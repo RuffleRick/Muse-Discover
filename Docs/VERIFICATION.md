@@ -1,5 +1,11 @@
 # Verification notes
 
+## Deeper brainstorming expansion — October 7, 2026
+
+- All 49 regression tests passed. Five new checks cover preset normalization, retained pin-only family paths, unrelated ungrouped ideas, parent differences and unavailable parents, escaped names, preserving existing fields, a three-path selection limit, and no network calls from direction/compare controls. Comparison changes also preserve an unsent direction draft.
+- Syntax checks for local modules and the browser script passed; `git diff --check` passed. A localhost smoke check confirmed eight presets in `/api/state`, the updated comparison script served at `/app.js`, and no generation job. The private library SHA-256 remained unchanged across checks. No source search or model generation was requested.
+- Browser rendering was not visually checked in this release. The regression checks exercise browser functions with a DOM stub; they do not confirm appearance in a real browser. Presets guide the existing model and do not guarantee semantic diversity or logical quality.
+
 ## Evidence quotation framing — October 7, 2026
 
 - A new diagnostic attempt using retained Muse sources reproduced false rejection: the model wrapped otherwise matching source text in literal quotation marks. This was not a recovery of the earlier rejected model outputs, which were not retained.

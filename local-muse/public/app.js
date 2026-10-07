@@ -60,11 +60,47 @@ function explorationPanel(idea){
  const settings=idea.exploration;
  const history=settings?'<details class="branch-history"><summary>Direction used for this branch</summary><p>'+esc([settings.keep&&'Kept: '+settings.keep,settings.change&&'Changed: '+settings.change,settings.constraints&&'Constraints: '+settings.constraints,settings.audience&&'Audience: '+settings.audience,'Creativity: '+settings.creativity,settings.combineName&&'Combined with: '+settings.combineName].filter(Boolean).join(' · '))+'</p></details>':'';
  const combined=settings?.combineId&&find(settings.combineId)?'<p><button class="secondary" data-tree-open="'+esc(settings.combineId)+'">Open combined idea: '+esc(settings.combineName)+'</button></p>':'';
- return history+combined+'<section class="exploration-panel" aria-label="Explore different paths"><h3>Explore different paths</h3><p>Choose a direction, then generate up to three variations. Each becomes a saved branch of this idea.</p><div class="exploration-fields"><div><label for="keepDirection">Keep this</label><textarea id="keepDirection" maxlength="600" placeholder="The core mechanic, useful feature, or style to preserve…"></textarea></div><div><label for="changeDirection">Change that</label><textarea id="changeDirection" maxlength="600" placeholder="A different interaction, workflow, or twist…"></textarea></div></div><label for="branchConstraints">Constraints</label><textarea id="branchConstraints" maxlength="600" placeholder="For example: offline, no accounts, one-week prototype, accessible controls…"></textarea><label for="branchAudience">Adapt for an audience</label><input id="branchAudience" maxlength="300" placeholder="Leave blank for the original audience"><div class="exploration-fields"><div><label for="branchCreativity">Creativity</label><select id="branchCreativity"><option value="focused">Focused · nearby improvements</option><option value="balanced" selected>Balanced · different approaches</option><option value="wild">Wild · surprising combinations</option></select></div><div><label for="combineIdea">Combine with a saved idea</label><select id="combineIdea"><option value="">No combination</option>'+others.map(i=>'<option value="'+esc(i.id)+'">'+esc(i.name)+'</option>').join('')+'</select></div></div><p class="search-hint">Directions guide the local model; check each result for fit. Combining ideas keeps the branch under this idea and links the other concept.</p></section>'+ideaTree(idea);
+ return history+combined+parentChanges(idea)+'<section class="exploration-panel" aria-label="Explore different paths"><h3>Explore different paths</h3><p>Choose a direction, then generate up to three variations. Each becomes a saved branch of this idea.</p><details class="direction-picker"><summary>Try a brainstorming direction</summary><label for="directionPreset">Direction</label><select id="directionPreset"><option value="">Choose a direction</option>'+(data.brainstormDirections||[]).map(d=>'<option value="'+esc(d.id)+'">'+esc(d.label)+'</option>').join('')+'</select><button id="applyDirection" class="secondary" type="button">Use this direction</button><p class="search-hint">Replaces Change that. Audience and constraints are filled only when empty. Edit any wording before generating.</p><p id="directionFeedback" role="status" aria-live="polite"></p></details><div class="exploration-fields"><div><label for="keepDirection">Keep this</label><textarea id="keepDirection" maxlength="600" placeholder="The core mechanic, useful feature, or style to preserve…"></textarea></div><div><label for="changeDirection">Change that</label><textarea id="changeDirection" maxlength="600" placeholder="A different interaction, workflow, or twist…"></textarea></div></div><label for="branchConstraints">Constraints</label><textarea id="branchConstraints" maxlength="600" placeholder="For example: offline, no accounts, one-week prototype, accessible controls…"></textarea><label for="branchAudience">Adapt for an audience</label><input id="branchAudience" maxlength="300" placeholder="Leave blank for the original audience"><div class="exploration-fields"><div><label for="branchCreativity">Creativity</label><select id="branchCreativity"><option value="focused">Focused · nearby improvements</option><option value="balanced" selected>Balanced · different approaches</option><option value="wild">Wild · surprising combinations</option></select></div><div><label for="combineIdea">Combine with a saved idea</label><select id="combineIdea"><option value="">No combination</option>'+others.map(i=>'<option value="'+esc(i.id)+'">'+esc(i.name)+'</option>').join('')+'</select></div></div><p class="search-hint">Directions guide the local model; check each result for fit. Combining ideas keeps the branch under this idea and links the other concept.</p></section>'+ideaTree(idea)+pathComparison(idea);
+}
+function familyIdeas(idea){
+ return [...new Map([...data.ideas,...data.pins.map(p=>p.idea),idea].map(i=>[i.id,i])).values()].filter(i=>i.id===idea.id||(idea.family&&i.family===idea.family));
+}
+function parentChanges(idea){
+ if(!idea.parentId)return '';
+ const parent=find(idea.parentId);
+ if(!parent)return '<details class="branch-history"><summary>What changed from the parent</summary><p>The parent is no longer in the library or pins. This saved branch is still available.</p></details>';
+ const fields=[['Concept','pitch'],['Twist','twist'],['Audience','audience'],['First useful version','features']];
+ const rows=fields.filter(([,key])=>JSON.stringify(parent[key])!==JSON.stringify(idea[key])).map(([label,key])=>{
+  const value=x=>Array.isArray(x)?x.join(' · '):x;
+  return '<div class="parent-change"><h3>'+label+'</h3><p><strong>Before:</strong> '+esc(value(parent[key]))+'</p><p><strong>This path:</strong> '+esc(value(idea[key]))+'</p></div>';
+ });
+ return '<details class="branch-history"><summary>What changed from the parent</summary><p>Compares saved wording; it does not judge whether a change is better.</p>'+rows.join('')+(rows.length?'':'<p>The concept, twist, audience, and first version have the same wording.</p>')+'<button class="secondary" data-tree-open="'+esc(parent.id)+'">Open parent: '+esc(parent.name)+'</button></details>';
+}
+function comparisonCards(ids){
+ return ids.slice(0,3).map(id=>find(id)).filter(Boolean).map(i=>'<article class="comparison-card"><button class="tree-node" data-tree-open="'+esc(i.id)+'">'+esc(i.name)+'</button><h3>Concept</h3><p>'+esc(i.pitch)+'</p><h3>Twist</h3><p>'+esc(i.twist)+'</p><h3>Audience</h3><p>'+esc(i.audience)+'</p><h3>First useful version</h3><ul>'+(i.features||[]).map(f=>'<li>'+esc(f)+'</li>').join('')+'</ul>'+(i.exploration?.constraints?'<h3>Constraints</h3><p>'+esc(i.exploration.constraints)+'</p>':'')+'</article>').join('');
+}
+function pathComparison(idea){
+ const nodes=familyIdeas(idea);
+ const defaults=[idea.id];if(nodes.some(i=>i.id===idea.parentId))defaults.push(idea.parentId);else if(nodes.length>1)defaults.push(nodes.find(i=>i.id!==idea.id).id);
+ return '<details class="path-comparison"><summary>Compare saved paths</summary><p>Choose up to three paths from this idea tree. Comparing uses saved text and keeps the model stopped.</p><div class="comparison-choices">'+nodes.map(i=>'<label><input type="checkbox" data-compare-path="'+esc(i.id)+'" '+(defaults.includes(i.id)?'checked':'')+'> '+esc(i.name)+'</label>').join('')+'</div><p id="pathComparisonStatus" role="status" aria-live="polite">'+(nodes.length===1?'Generate variations when you want more paths to compare.':'')+'</p><div id="pathComparisonCards" class="comparison-cards">'+comparisonCards(defaults)+'</div></details>';
+}
+function applyBrainstormDirection(){
+ const preset=(data.brainstormDirections||[]).find(d=>d.id===$('directionPreset').value);
+ if(!preset){$('directionFeedback').textContent='Choose a direction first.';return;}
+ $('changeDirection').value=preset.change;
+ if(!$('branchAudience').value.trim()&&preset.audience)$('branchAudience').value=preset.audience;
+ if(!$('branchConstraints').value.trim()&&preset.constraints)$('branchConstraints').value=preset.constraints;
+ $('directionFeedback').textContent='Direction ready. Review the fields, then choose Explore new variations.';
+}
+function updatePathComparison(event){
+ const checkbox=event.target.closest('[data-compare-path]');if(!checkbox)return;
+ let choices=[...$('detailBody').querySelectorAll('[data-compare-path]:checked')];
+ if(choices.length>3){checkbox.checked=false;choices=choices.filter(c=>c!==checkbox);$('pathComparisonStatus').textContent='Compare up to three paths. Uncheck one before adding another.';}
+ else $('pathComparisonStatus').textContent=choices.length?'':'Select a saved path to compare.';
+ $('pathComparisonCards').innerHTML=comparisonCards(choices.map(c=>c.dataset.comparePath));
 }
 function ideaTree(idea){
- const all=[...new Map([...data.ideas,...data.pins.map(p=>p.idea)].map(i=>[i.id,i])).values()];
- const nodes=all.filter(i=>i.family===idea.family||i.id===idea.id);
+ const nodes=familyIdeas(idea);
  const ids=new Set(nodes.map(i=>i.id)),children=new Map();
  for(const i of nodes){const key=ids.has(i.parentId)?i.parentId:null;if(!children.has(key))children.set(key,[]);children.get(key).push(i);}
  const seen=new Set(),rows=[];
@@ -80,6 +116,8 @@ function openIdea(id){
  if(i.exploration){for(const [id,key] of [['keepDirection','keep'],['branchConstraints','constraints'],['branchAudience','audience'],['branchCreativity','creativity'],['combineIdea','combineId']])$(id).value=i.exploration[key]|| (key==='creativity'?'balanced':'');}
  $('branch').onclick=()=>{if(busy||stopped)return;const settings={keep:$('keepDirection').value,change:$('changeDirection').value,constraints:$('branchConstraints').value,audience:$('branchAudience').value,creativity:$('branchCreativity').value,combineId:$('combineIdea').value};$('detail').close();void generate(i.id,settings);};
  $('detailBody').onclick=e=>{const node=e.target.closest('[data-tree-open]');if(node){$('detail').close();openIdea(node.dataset.treeOpen);}};
+ $('applyDirection').onclick=applyBrainstormDirection;
+ $('detailBody').onchange=updatePathComparison;
  $('detailPin').onclick=async()=>{await pin(i.id,isPinned(i.id));$('detailPin').textContent=isPinned(i.id)?'Unpin idea':'Pin for later';};
  $('saveNote').onclick=()=>void pin(i.id,false,$('note').value);
  $('makeKit').onclick=async()=>{

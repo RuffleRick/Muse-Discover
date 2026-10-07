@@ -4,7 +4,7 @@ import path from 'node:path';
 import {randomUUID} from 'node:crypto';
 import {ROOT,DATA,load,save,text,categories,collect,makeKit} from './core.mjs';
 import {generate,stopModel,model} from './engine.mjs';
-import {explorationOptions} from './exploration.mjs';
+import {explorationOptions,brainstormDirections} from './exploration.mjs';
 import {createMobileAccess} from './mobile-access.mjs';
 import {createRedditSearch} from './reddit-search.mjs';
 import {MAX_IMPORT_BYTES,exportLibrary,validateLibrary,mergeLibrary,clearGenerated,createBackup,listBackups,readBackup} from './library-tools.mjs';
@@ -84,7 +84,7 @@ const server=http.createServer(async(req,res)=>{
  }
  if(url.pathname==='/api/state'&&req.method==='GET'){
  lastSeen=Date.now();
- reply(res,200,{ideas:state.ideas,pins:state.pins,categories,model,job,mode:'local-on-demand'});return;
+ reply(res,200,{ideas:state.ideas,pins:state.pins,categories,brainstormDirections,model,job,mode:'local-on-demand'});return;
  }
  if(url.pathname==='/api/library/export'&&req.method==='GET'){
  lastSeen=Date.now();reply(res,200,exportLibrary(state));return;

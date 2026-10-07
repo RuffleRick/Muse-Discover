@@ -2,6 +2,8 @@
 
 ## October 7, 2026
 
+- Expanded deeper brainstorming with eight editable direction presets, comparison of up to three saved family paths, and parent wording differences. Presets preserve existing keep/creativity/combination controls and nonempty audience/constraints. Browsing uses retained ideas and pins without generation, including pins whose parent has been cleared.
+
 - Fixed false evidence rejections caused by literal outer quotation marks in local-model source quotes. Both excerpt and need-signal checks now tolerate balanced quotation framing while preserving exact wording, source identity, and length requirements.
 - Changed generation to select supplied evidence IDs, with Muse binding the literal quote to its corresponding first source, after native rolls exposed genuine paraphrasing. Fresh need-led options use detected signals; first-source verification remains required.
 
