@@ -36,6 +36,12 @@ Library organization is optional per-idea metadata: `organization:{tags,collecti
 
 The browser's collapsed idea organizer and saved-library filters use retained metadata only. Text search includes tags, collections, and status; tag/collection/status filters combine with text search and Clear resets them together. Saving organization refreshes cards without replacing unsent exploration fields. An idea can belong to multiple collections; collections are labels rather than separate folder records.
 
+## Personal starting ideas
+
+`personal-ideas.mjs` validates manually entered name, category, description, and optional twist/audience/three features. It creates a `user-authored` family root and a local `user-brief` reference containing the supplied concept and explicit personal provenance. Optional empty fields get clearly provisional prototype defaults. `POST /api/library/create` uses the library-management lock and atomic save, refuses a full library, and starts no collection or inference. The paired gateway permits this route. The Library tools form opens the saved idea's standard detail view; it is not automatically pinned.
+
+Personal briefs have no public URL. Portable v1 validation explicitly preserves their kind and bounded text; source cards and Codex kits render them without invented links. Need detection excludes these references, and model prompts explain that briefs are creative input rather than observed public complaints or demand. The ordinary on-demand variation pipeline reuses the brief, selects a literal quote, checks basic feasibility, stops its owned model process, and retains family/parent/exploration relationships. Combined public sources retain their original provenance. Clearing the library removes manual unpinned roots too; pinned snapshots remain protected.
+
 ## Hosted source
 
 `muse-app/` preserves the hosted site's source and its existing Sites project identifier. Dependencies, build output, execution caches, and nested Git metadata were excluded from the copy. It requires dependency preparation before local building. The hosted library and account pins are separate from local state. No hosting or access changes were made during consolidation.

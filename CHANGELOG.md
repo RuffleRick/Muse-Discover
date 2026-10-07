@@ -2,6 +2,8 @@
 
 ## October 7, 2026
 
+- Added Library tools → Add my own idea with optional audience, twist, and first-version features. Personal roots use the existing branching/tree/comparison/pin/organization/kit tools. Personal briefs retain explicit provenance without fake URLs or public-need claims; imports and backups preserve them. Saving starts no research or inference. Library clearing now explicitly warns that unpinned personal ideas are removed too.
+
 - Added reliable-library organization: tags, multiple collections, and Idea/Shortlisted/Building/Completed/Parked statuses. Collapsed saved-view filters combine with text search, cards display labels, and the idea organizer preserves pinned snapshots, notes, and branch relationships. Organization is validated through exports/imports and backups; existing ideas need no migration. No model requests are made by organizing or filtering.
 
 - Expanded deeper brainstorming with eight editable direction presets, comparison of up to three saved family paths, and parent wording differences. Presets preserve existing keep/creativity/combination controls and nonempty audience/constraints. Browsing uses retained ideas and pins without generation, including pins whose parent has been cleared.

@@ -14,6 +14,8 @@ Rows marked Implemented describe available features; the remaining rows are prop
 
 Reddit search-provider integration is implemented and awaiting the owner's free Tavily API key for activation/live testing. It uses indexed search snippets, not direct Reddit API access or full-thread collection. See [setup and limitations](REDDIT-ACCESS.md). Direct Reddit API integration is deferred.
 
+Own-idea entry is available in Library tools. A personal starting concept supports the same branching, comparison, organization, pinning, and Codex-kit tools, with personal-brief provenance retained.
+
 Suggested next library release: cancellation and separate research/model timings. Other candidates: clearer evidence and stronger Codex kits with acceptance criteria.
 
 Measure success by worthwhile saved ideas, completed prototypes, and skills learned as well as generation speed. Source volume alone is not proof of demand or an underserved market.

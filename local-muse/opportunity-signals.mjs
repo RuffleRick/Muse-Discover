@@ -12,7 +12,7 @@ function needWords(quote,topic){const topical=new Set(words(topic));return words
 function isNegated(sentence,index){return /\b(?:not|never|no longer|isn't|aren't|wasn't)\s+(?:\w+\s+){0,2}$/.test(sentence.slice(Math.max(0,index-45),index).toLowerCase());}
 function activeMatch(pattern,text){const match=pattern.exec(text);return !!match&&!isNegated(text,match.index);}
 export function detectSignals(source,topic=''){
- if(isSearchSnippet(source))return []; // Search chunks lack verified thread/author context.
+ if(isSearchSnippet(source)||source.kind==='user-brief')return []; // Personal briefs and search chunks do not establish public needs.
  const excerpt=String(source.excerpt||'').slice(0,16000),signals=[];
  const topical=words(topic),bodyWords=words(excerpt);
  if(topical.length&&!topical.some(t=>bodyWords.some(w=>w===t||w===t+'s'||t===w+'s')))return signals;

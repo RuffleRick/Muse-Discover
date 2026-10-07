@@ -4,12 +4,13 @@ import vm from 'node:vm';
 import {readFile} from 'node:fs/promises';
 import {brainstormDirections,explorationOptions,explorationContext} from './exploration.mjs';
 import {libraryStatuses} from './library-organization.mjs';
+import {personalIdea} from './personal-ideas.mjs';
 const script=await readFile(new URL('./public/app.js',import.meta.url),'utf8');
 const root={id:'root',family:'family',name:'Original',pitch:'Original concept',twist:'Original twist',audience:'Everyone',features:['One feature']};
 const branch={...root,id:'branch',parentId:'root',name:'A <branch>',twist:'A different twist',features:['New feature']};
 function setup(state){
  const elements=new Map();
- const element=id=>{if(!elements.has(id))elements.set(id,{value:'',textContent:'',classList:{toggle(){}},addEventListener(){}});return elements.get(id);};
+ const element=id=>{if(!elements.has(id))elements.set(id,{value:'',textContent:'',classList:{toggle(){}},addEventListener(){},showModal(){},close(){},reset(){},insertAdjacentHTML(position,html){this.innerHTML+=html;}});return elements.get(id);};
  let requests=0;
  const context=vm.createContext({document:{getElementById:element},location:{hostname:'127.0.0.1'},setInterval(){},fetch(){requests++;return new Promise(()=>{});},fixture:state,root,branch});
  vm.runInContext(script,context);vm.runInContext('data=fixture;',context);
@@ -69,4 +70,11 @@ test('organization markup escapes labels and saving preserves unsent exploration
  ui.element('ideaTags').value='Puzzle';ui.element('ideaCollections').value='Weekend';ui.element('ideaProjectStatus').value='building';ui.element('changeDirection').value='Unsent draft';
  const calls=[];ui.context.fetch=async(route,options)=>{calls.push({route,body:JSON.parse(options.body)});return {ok:true,json:async()=>({ideas:[{...organized,organization:{tags:['Puzzle'],collections:['Weekend'],status:'building'}}],pins:[]})};};
  await ui.run('selected=data.ideas[0];saveOrganization("root")');assert.equal(calls.length,1);assert.equal(calls[0].route,'/api/library/organize');assert.equal(calls[0].body.organization.status,'building');assert.equal(ui.element('changeDirection').value,'Unsent draft');assert.match(ui.element('organizationStatus').textContent,/saved/);
+});
+test('saving a personal idea opens its branching controls without searches or generation',async()=>{
+ const i=personalIdea({name:'My <puzzle>',pitch:'Arrange garden plants into a small puzzle layout.',category:'Games'});
+ const ui=setup({ideas:[],pins:[],libraryStatuses,brainstormDirections});const calls=[];
+ ui.context.fetch=async(route,options)=>{calls.push(route);return {ok:true,json:async()=>({idea:i,ideas:[i],pins:[]})};};
+ ui.element('personalName').value=i.name;ui.element('personalPitch').value=i.pitch;ui.element('personalCategory').value=i.category;
+ await ui.run('savePersonalIdea()');assert.deepEqual(calls,['/api/library/create']);assert.match(ui.element('detailBody').innerHTML,/Explore new variations/);assert.match(ui.element('detailBody').innerHTML,/My &lt;puzzle&gt;/);assert.doesNotMatch(ui.run('sourceCards(data.ideas[0])'),/href=/);assert.match(ui.element('board').innerHTML,/YOUR IDEA/);
 });

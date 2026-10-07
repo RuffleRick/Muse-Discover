@@ -1,5 +1,11 @@
 # Verification notes
 
+## Personal idea entry — October 7, 2026
+
+- All 61 regression tests passed. Five added tests cover bounded personal input and defaults, unique family roots, v1 export/import and pin preservation, Codex-kit provenance without fake links, and the standard literal-evidence/feasibility/branch pipeline using a supplied fixture. The frontend test confirms saving sends only `/api/library/create` and opens escaped detail/branch controls without research or inference.
+- Local module/browser syntax and diff checks passed. Localhost smoke checks confirmed the served form, rejected an empty idea with 400, and rejected a wrong-Origin mutation with 403. The private library hash was unchanged; no synthetic ideas were added to it.
+- Real-model branching from a personal idea and visual browser appearance were not exercised. Prompt and validation paths were tested using structured fixture output; no generation was requested. The existing owned-process stop behavior remains in the same generation finally block.
+
 ## Reliable library organization — October 7, 2026
 
 - All 56 regression tests passed. Seven added checks cover label normalization and bounds, rejected statuses, synchronized generated/pinned snapshots, pin-only organization, retained notes and relationships, v1 import compatibility and conflict handling, backup restoration, combined filters/search, escaped metadata, and saving without replacing an unsent exploration draft. Filter changes make no network requests; the organization control sends only its library mutation.

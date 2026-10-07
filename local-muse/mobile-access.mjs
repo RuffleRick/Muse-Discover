@@ -53,7 +53,7 @@ export function createMobileAccess(root,{getNetwork=networkStatus,openTunnel=sta
       }
       if(url.pathname.startsWith('/api/mobile')||url.pathname==='/api/stop'){json(res,403,{error:'Manage mobile access and stopping Muse from the PC.'});return;}
       // Forward only known app routes; never trust remote Host, Origin, or forwarding headers.
-      const allowed=['/','/app.js','/style.css','/api/status','/api/state','/api/generate','/api/pin','/api/kit','/api/library/export','/api/library/backups','/api/library/import','/api/library/backup','/api/library/restore','/api/library/clear','/api/library/organize'];
+      const allowed=['/','/app.js','/style.css','/api/status','/api/state','/api/generate','/api/pin','/api/kit','/api/library/export','/api/library/backups','/api/library/import','/api/library/backup','/api/library/restore','/api/library/clear','/api/library/organize','/api/library/create'];
       if(!allowed.includes(url.pathname)||!['GET','POST'].includes(req.method)){json(res,404,{error:'Not found.'});return;}
       const proxy=http.request({hostname:'127.0.0.1',port:appPort,path:url.pathname,method:req.method,headers:{Host:'127.0.0.1:'+appPort,...(req.method==='POST'?{Origin:'http://127.0.0.1:'+appPort,'Content-Type':'application/json'}:{})}},response=>{res.writeHead(response.statusCode,response.headers);response.pipe(res);});
       proxy.on('error',()=>{if(!res.headersSent)json(res,503,{error:'Muse on the PC is unavailable.'});else res.destroy();});req.on('aborted',()=>proxy.destroy());req.pipe(proxy);

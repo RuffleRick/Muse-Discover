@@ -11,6 +11,7 @@ function string(v,key,max=2000){if(typeof v!=='string'||v.length>max)throw Error
 function id(v,key){const s=string(v,key,100);if(!s.trim())throw Error('Missing '+key+'.');return s;}
 function source(s){
  if(!s||typeof s!=='object')throw Error('Invalid source.');
+ if(s.kind==='user-brief')return {id:id(s.id,'brief ID'),kind:'user-brief',title:string(s.title,'brief title'),excerpt:string(s.excerpt,'brief text',16000),site:'Personal brief',author:'You',retrievedAt:string(s.retrievedAt,'brief date',100)};
  const url=string(s.url,'source URL',3000);let u;try{u=new URL(url);}catch{throw Error('Invalid source URL.');}
  if(!['http:','https:'].includes(u.protocol)||u.username||u.password)throw Error('Unsafe source URL.');
  const out={id:id(s.id,'source ID'),url,title:string(s.title,'source title'),excerpt:string(s.excerpt||'','source excerpt',16000)};

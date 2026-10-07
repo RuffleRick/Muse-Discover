@@ -8,6 +8,7 @@ import {explorationOptions,brainstormDirections} from './exploration.mjs';
 import {createMobileAccess} from './mobile-access.mjs';
 import {createRedditSearch} from './reddit-search.mjs';
 import {libraryStatuses,organizeIdea} from './library-organization.mjs';
+import {personalIdea} from './personal-ideas.mjs';
 import {MAX_IMPORT_BYTES,exportLibrary,validateLibrary,mergeLibrary,clearGenerated,createBackup,listBackups,readBackup} from './library-tools.mjs';
 const port=3008;
 const origin='http://127.0.0.1:'+port;
@@ -100,6 +101,18 @@ const server=http.createServer(async(req,res)=>{
  const b=await body(req);const next=organizeIdea(state,b.id,b.organization);
  await writeQueue.catch(()=>{});await save(next);state=next;
  reply(res,200,{ideas:state.ideas,pins:state.pins});
+ }finally{managing=false;}
+ return;
+ }
+ if(url.pathname==='/api/library/create'&&req.method==='POST'){
+ if(job?.state==='running'){reply(res,409,{error:'Wait for generation to finish before saving your idea.'});return;}
+ managing=true;lastSeen=Date.now();
+ try{
+ const idea=personalIdea(await body(req));
+ if(state.ideas.length>=5000)throw Error('The library is full. Export or clear unpinned ideas before adding another.');
+ const next={...state,ideas:[...state.ideas,idea]};
+ await writeQueue.catch(()=>{});await save(next);state=next;
+ reply(res,201,{idea,ideas:state.ideas,pins:state.pins});
  }finally{managing=false;}
  return;
  }

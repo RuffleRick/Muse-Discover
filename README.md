@@ -13,6 +13,7 @@ This folder is the main Muse project:
 
 - Search public discussions and roll up to three new concepts using the local model.
 - Explore up to three variations of a selected or pinned concept.
+- Use **Library tools → Add my own idea** to enter a name, category, and description, plus optional twist, audience, and up to three features. Saving opens the usual branching controls without searching or starting the model. Personal briefs remain labeled as your own inspiration in variations and Codex kits. Pin your starting idea if you want to keep it when clearing the library.
 - Browse and shuffle saved concepts without generation.
 - Search Saved library and Pinned instantly by names, descriptions, features, source text, or personal notes. Multiple words can match different parts of an idea; use Clear to reset.
 - Open **Library tools** for JSON export/import, local backups and restoration, or clearing generated ideas while keeping pins.

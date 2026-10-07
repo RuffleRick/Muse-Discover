@@ -47,12 +47,12 @@ function render(){
  const filtering=terms.length||tag||collection||projectStatus;
  $('heading').textContent=view==='pins'?'Keep the paths worth returning to.':view==='library'?'Every direction you’ve discovered.':'A little curiosity. A new direction.';
  $('intro').textContent=view==='pins'?'Search your pinned concepts and notes, or open an idea to keep exploring.':view==='library'?'Search by anything you remember, then open, pin, or branch a saved concept.':'Find a useful twist on a familiar problem, game, or everyday task.';
- $('libraryInfo').textContent=savedView?list.length+' of '+all.length+' '+(view==='pins'?'pinned ideas':'saved concepts')+(filtering?' match your search and filters':'') :data.ideas.length+' generated concepts in your local library · '+data.pins.length+' pinned';
+ $('libraryInfo').textContent=savedView?list.length+' of '+all.length+' '+(view==='pins'?'pinned ideas':'saved concepts')+(filtering?' match your search and filters':'') :data.ideas.length+' concepts in your local library · '+data.pins.length+' pinned';
  if(savedView&&!list.length){
   $('board').innerHTML='<div class="empty"><h2>'+(filtering?'No matching ideas.':view==='pins'?'Your next favorite belongs here.':'Your library is ready for its first idea.')+'</h2><p>'+(filtering?'Try fewer words or different filters, or use Clear to see every idea.':view==='pins'?'Pin a concept to save it here with your notes.':'Use Explore to roll your first concepts.')+'</p></div>';
   return;
  }
- $('board').innerHTML=list.length?list.map(i=>'<article class="card"><div class="card-top"><span class="tag">'+esc(i.category)+'</span><button class="pin '+(isPinned(i.id)?'on':'')+'" data-pin="'+esc(i.id)+'" aria-label="'+(isPinned(i.id)?'Unpin':'Pin')+' '+esc(i.name)+'">'+(isPinned(i.id)?'★':'☆')+'</button></div><button class="title-button" data-open="'+esc(i.id)+'">'+esc(i.name)+'</button><p>'+esc(i.pitch)+'</p><p class="twist">'+esc(i.twist)+'</p>'+organizationBadges(i)+'<div class="card-bottom"><span>'+i.sources.length+' source'+(i.sources.length===1?'':'s')+' · LOCAL AI</span><button data-open="'+esc(i.id)+'">Explore idea →</button></div></article>').join(''):'<div class="empty"><h2>'+(view==='pins'?'Your next favorite belongs here.':'Start with a roll. Or follow a curiosity.')+'</h2><p>'+(view==='pins'?'Pin a concept to save it for later.':'Try “solitaire variants,” “leftovers,” or “photography.” Muse will find discussions and generate up to three new directions on your PC.')+'</p><p>The model stays stopped until you ask for new ideas.</p></div>';
+ $('board').innerHTML=list.length?list.map(i=>'<article class="card"><div class="card-top"><span class="tag">'+esc(i.category)+'</span><button class="pin '+(isPinned(i.id)?'on':'')+'" data-pin="'+esc(i.id)+'" aria-label="'+(isPinned(i.id)?'Unpin':'Pin')+' '+esc(i.name)+'">'+(isPinned(i.id)?'★':'☆')+'</button></div><button class="title-button" data-open="'+esc(i.id)+'">'+esc(i.name)+'</button><p>'+esc(i.pitch)+'</p><p class="twist">'+esc(i.twist)+'</p>'+organizationBadges(i)+'<div class="card-bottom"><span>'+i.sources.length+' source'+(i.sources.length===1?'':'s')+' · '+(i.mode==='user-authored'?'YOUR IDEA':'LOCAL AI')+'</span><button data-open="'+esc(i.id)+'">Explore idea →</button></div></article>').join(''):'<div class="empty"><h2>'+(view==='pins'?'Your next favorite belongs here.':'Start with a roll. Or follow a curiosity.')+'</h2><p>'+(view==='pins'?'Pin a concept to save it for later.':'Try “solitaire variants,” “leftovers,” or “photography.” Muse will find discussions and generate up to three new directions on your PC.')+'</p><p>The model stays stopped until you ask for new ideas.</p></div>';
 }
 function find(id){return data.ideas.find(i=>i.id===id)||data.pins.find(p=>p.idea.id===id)?.idea;}
 async function load(){data=await api('/api/state');if(!board.length)board=data.ideas.slice(-3);render();}
@@ -130,6 +130,25 @@ function ideaTree(idea){
  for(const root of children.get(null)||[])walk(root,0);for(const i of nodes)if(!seen.has(i.id))walk(i,0);
  return '<details class="idea-tree" open><summary>Idea tree · '+nodes.length+' '+(nodes.length===1?'path':'paths')+'</summary><p>Open any saved path to revisit, pin, or branch it. Indented paths descend from the idea above them.</p><ul>'+rows.join('')+'</ul></details>';
 }
+function sourceCards(idea){
+ return idea.sources.map(s=>s.kind==='user-brief'?'<section class="source"><h3>Your starting brief</h3><p>'+esc(s.excerpt)+'</p><small>Personal inspiration · no public research or demand verification</small></section>':'<div class="source"><a href="'+esc(s.url)+'" target="_blank" rel="noopener noreferrer">'+esc(s.title)+'</a><p>'+esc(s.excerpt)+'</p><small>'+esc(s.site)+(s.kind==='search-snippet'||s.id.startsWith('reddit-search-')?' · snippet only · full thread not checked':'')+' · '+esc(s.author)+' · fetched '+new Date(s.retrievedAt).toLocaleDateString()+(s.license?' · '+esc(s.license):'')+'</small></div>').join('');
+}
+let personalSaving=false;
+function openPersonalIdea(){
+ if(busy||stopped||toolsBusy||personalSaving)return;
+ $('personalCategory').innerHTML=(data.categories||['Games','Everyday life','Community','Hobbies','Creative','Learning','Tools']).filter(c=>c!=='Everything').map(c=>'<option>'+esc(c)+'</option>').join('');
+ $('personalIdeaStatus').textContent='';$('personalIdeaDialog').showModal();
+}
+async function savePersonalIdea(){
+ if(busy||stopped||personalSaving)return;
+ personalSaving=true;$('savePersonalIdea').disabled=true;$('personalIdeaStatus').textContent='Saving your starting idea…';
+ try{
+  const result=await api('/api/library/create',{name:$('personalName').value,category:$('personalCategory').value,pitch:$('personalPitch').value,twist:$('personalTwist').value,audience:$('personalAudience').value,features:$('personalFeatures').value});
+  data.ideas=result.ideas;data.pins=result.pins;board=[result.idea];view='board';render();$('personalIdeaDialog').close();$('personalIdeaForm').reset();
+  openIdea(result.idea.id);status('Your idea is saved. Choose a direction and Explore new variations when ready.');
+ }catch(e){$('personalIdeaStatus').textContent=e.message;}
+ finally{personalSaving=false;$('savePersonalIdea').disabled=busy||stopped;}
+}
 function organizationPanel(idea){
  const settings=idea.organization||{tags:[],collections:[],status:'idea'};
  return '<details class="idea-organization"><summary>Organize this idea</summary><p>Tags describe an idea. Collections group ideas you want to revisit together. These labels apply to this path only and do not run the model.</p><label for="ideaTags">Tags · comma separated · up to 12</label><input id="ideaTags" maxlength="622" value="'+esc(settings.tags.join(', '))+'" placeholder="offline, puzzle, quick prototype"><label for="ideaCollections">Collections · comma separated · up to 5</label><input id="ideaCollections" maxlength="258" value="'+esc(settings.collections.join(', '))+'" placeholder="Weekend projects, Games to try"><label for="ideaProjectStatus">Project status</label><select id="ideaProjectStatus">'+Object.entries(data.libraryStatuses||{idea:'Idea'}).map(([value,label])=>'<option value="'+esc(value)+'" '+(settings.status===value?'selected':'')+'>'+esc(label)+'</option>').join('')+'</select><button id="saveOrganization" class="secondary" type="button" '+(busy?'disabled':'')+'>Save organization</button><p class="search-hint">Each tag or collection name can contain up to 50 characters. Clear a field to remove its labels. Saving does not pin an idea.</p><p id="organizationStatus" role="status" aria-live="polite"></p></details>';
@@ -149,8 +168,8 @@ async function saveOrganization(id){
 function openIdea(id){
  selected=find(id);if(!selected)return;
  const i=selected;
- $('detailCategory').textContent=i.category+' · Generated '+new Date(i.generatedAt).toLocaleDateString();
- $('detailBody').innerHTML='<h2>'+esc(i.name)+'</h2><p>'+esc(i.pitch)+'</p><h3>The twist</h3><p>'+esc(i.twist)+'</p><h3>Who it’s for</h3><p>'+esc(i.audience)+'</p><h3>The first useful version</h3><ul>'+i.features.map(f=>'<li>'+esc(f)+'</li>').join('')+'</ul>'+(i.reasoning?'<section class="source"><h3>How this could work</h3><p><strong>Inputs:</strong> '+esc(i.reasoning.inputs.join('; '))+'</p><p>'+esc(i.reasoning.workflow)+'</p><p><strong>Limits:</strong> '+esc(i.reasoning.limitations)+'</p><p><strong>Discussion excerpt:</strong> '+esc(i.reasoning.sourceQuote)+'</p></section>':'')+explorationPanel(i)+'<div class="actions"><button id="branch" class="primary" '+(busy?'disabled':'')+'>Explore new variations</button><button id="detailPin" class="secondary">'+(isPinned(i.id)?'Unpin idea':'Pin for later')+'</button></div><h3>What inspired this</h3><p>'+esc(i.evidence)+'</p>'+i.sources.map(s=>'<div class="source"><a href="'+esc(s.url)+'" target="_blank" rel="noopener noreferrer">'+esc(s.title)+'</a><p>'+esc(s.excerpt)+'</p><small>'+esc(s.site)+(s.kind==='search-snippet'||s.id.startsWith('reddit-search-')?' · snippet only · full thread not checked':'')+' · '+esc(s.author)+' · fetched '+new Date(s.retrievedAt).toLocaleDateString()+(s.license?' · '+esc(s.license):'')+'</small></div>').join('')+researchPanel(i)+'<h3>Validate before building</h3><p>'+esc(i.validation)+'</p><h3>Your Codex starting point</h3><div class="kit-settings"><label for="platform">Build as</label><select id="platform"><option value="web app">Web app</option><option value="desktop tool">Desktop tool</option><option value="Unity game prototype">Unity game prototype</option></select><label for="note">Your direction</label><textarea id="note" maxlength="2000" placeholder="Focus, style, features, or constraints…">'+esc(data.pins.find(p=>p.idea.id===i.id)?.note||'')+'</textarea></div><div class="actions"><button id="saveNote" class="secondary">Pin idea and notes</button><button id="makeKit" class="secondary">Create Codex kit</button></div><section id="kit"></section>';
+ $('detailCategory').textContent=i.category+(i.mode==='user-authored'?' · Saved ':' · Generated ')+new Date(i.generatedAt).toLocaleDateString();
+ $('detailBody').innerHTML='<h2>'+esc(i.name)+'</h2><p>'+esc(i.pitch)+'</p><h3>The twist</h3><p>'+esc(i.twist)+'</p><h3>Who it’s for</h3><p>'+esc(i.audience)+'</p><h3>The first useful version</h3><ul>'+i.features.map(f=>'<li>'+esc(f)+'</li>').join('')+'</ul>'+(i.reasoning?'<section class="source"><h3>How this could work</h3><p><strong>Inputs:</strong> '+esc(i.reasoning.inputs.join('; '))+'</p><p>'+esc(i.reasoning.workflow)+'</p><p><strong>Limits:</strong> '+esc(i.reasoning.limitations)+'</p><p><strong>Reference excerpt:</strong> '+esc(i.reasoning.sourceQuote)+'</p></section>':'')+explorationPanel(i)+'<div class="actions"><button id="branch" class="primary" '+(busy?'disabled':'')+'>Explore new variations</button><button id="detailPin" class="secondary">'+(isPinned(i.id)?'Unpin idea':'Pin for later')+'</button></div><h3>What inspired this</h3><p>'+esc(i.evidence)+'</p>'+sourceCards(i)+researchPanel(i)+'<h3>Validate before building</h3><p>'+esc(i.validation)+'</p><h3>Your Codex starting point</h3><div class="kit-settings"><label for="platform">Build as</label><select id="platform"><option value="web app">Web app</option><option value="desktop tool">Desktop tool</option><option value="Unity game prototype">Unity game prototype</option></select><label for="note">Your direction</label><textarea id="note" maxlength="2000" placeholder="Focus, style, features, or constraints…">'+esc(data.pins.find(p=>p.idea.id===i.id)?.note||'')+'</textarea></div><div class="actions"><button id="saveNote" class="secondary">Pin idea and notes</button><button id="makeKit" class="secondary">Create Codex kit</button></div><section id="kit"></section>';
  if(i.exploration){for(const [id,key] of [['keepDirection','keep'],['branchConstraints','constraints'],['branchAudience','audience'],['branchCreativity','creativity'],['combineIdea','combineId']])$(id).value=i.exploration[key]|| (key==='creativity'?'balanced':'');}
  $('branch').onclick=()=>{if(busy||stopped)return;const settings={keep:$('keepDirection').value,change:$('changeDirection').value,constraints:$('branchConstraints').value,audience:$('branchAudience').value,creativity:$('branchCreativity').value,combineId:$('combineIdea').value};$('detail').close();void generate(i.id,settings);};
  $('detailBody').onclick=e=>{const node=e.target.closest('[data-tree-open]');if(node){$('detail').close();openIdea(node.dataset.treeOpen);}};
@@ -172,6 +191,10 @@ function openIdea(id){
 }
 function download(name,content,type){const url=URL.createObjectURL(new Blob([content],{type}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 $('searchForm').onsubmit=e=>{e.preventDefault();void generate();};
+$('createOwnIdea').onclick=openPersonalIdea;
+$('closePersonalIdea').onclick=()=>{if(!personalSaving)$('personalIdeaDialog').close();};
+$('personalIdeaDialog').addEventListener('cancel',e=>{if(personalSaving)e.preventDefault();});
+$('personalIdeaForm').onsubmit=e=>{e.preventDefault();void savePersonalIdea();};
 $('libraryQuery').oninput=()=>render();
 $('clearLibrarySearch').onclick=()=>{for(const id of ['libraryQuery','libraryTag','libraryCollection','libraryStatus'])$(id).value='';render();$('libraryQuery').focus();};
 for(const id of ['libraryTag','libraryCollection','libraryStatus'])$(id).onchange=()=>render();
@@ -186,7 +209,7 @@ load().then(()=>{if(data.job?.state==='running'){setBusy(true);jobId=data.job.id
 
 
 let toolsBusy=false,backups=[];
-const toolIds=['exportLibrary','importLibrary','createBackup','restoreBackup','clearGenerated','backupChoice','importFile'];
+const toolIds=['exportLibrary','importLibrary','createBackup','restoreBackup','clearGenerated','backupChoice','importFile','createOwnIdea'];
 function syncTools(){for(const id of toolIds)$(id).disabled=busy||stopped||toolsBusy; if(!busy&&!stopped&&!toolsBusy)$('restoreBackup').disabled=!$('backupChoice').value;}
 function toolsStatus(message){$('toolsStatus').textContent=message;}
 async function refreshBackups(){
@@ -204,7 +227,7 @@ $('importLibrary').onclick=()=>{if(!busy&&!stopped&&!toolsBusy)$('importFile').c
 $('importFile').onchange=async()=>{const file=$('importFile').files[0];$('importFile').value='';if(!file||busy||stopped||toolsBusy)return;try{if(file.size>20*1024*1024)throw Error('Choose a library export smaller than 20 MB.');const library=JSON.parse(await file.text());if(library.format!=='muse-library'||library.version!==1||!Array.isArray(library.ideas)||!Array.isArray(library.pins))throw Error('Choose a Muse library export (version 1).');if(!confirm('Merge '+library.ideas.length+' ideas and '+library.pins.length+' pins into Muse? Existing items and notes will be kept when IDs match. A backup is created first.'))return;await libraryOperation('/api/library/import',{library},'Import complete. Existing items and pin notes were preserved.');}catch(e){toolsStatus(e.message);}};
 $('createBackup').onclick=()=>void libraryOperation('/api/library/backup',{},'Backup saved on this PC.',false);
 $('restoreBackup').onclick=()=>{const backup=backups.find(b=>b.name===$('backupChoice').value);if(!backup||busy||stopped||toolsBusy)return;if(confirm('Restore '+new Date(backup.createdAt).toLocaleString()+'? Your library and pins will be replaced with '+backup.ideas+' ideas and '+backup.pins+' pins from that backup. The current state is backed up first, so you can undo this.'))void libraryOperation('/api/library/restore',{name:backup.name,confirm:true},'Backup restored. Your previous state is available in backups.');};
-$('clearGenerated').onclick=()=>{if(busy||stopped||toolsBusy)return;if(confirm('Clear all '+data.ideas.length+' generated-library ideas? All '+data.pins.length+' pins and their notes will remain. Muse creates a backup first so you can restore the cleared ideas.'))void libraryOperation('/api/library/clear',{confirm:true},'Generated library cleared. Your pins and notes are kept; a backup is available.');};
+$('clearGenerated').onclick=()=>{if(busy||stopped||toolsBusy)return;if(confirm('Clear all '+data.ideas.length+' library ideas, including your own? All '+data.pins.length+' pins and their notes will remain. Muse creates a backup first so you can restore the cleared ideas.'))void libraryOperation('/api/library/clear',{confirm:true},'Generated library cleared. Your pins and notes are kept; a backup is available.');};
 syncTools();
 
 
@@ -239,6 +262,7 @@ $('removeRedditKey').onclick=()=>void configureRedditSearch({remove:true});
 
 function researchPanel(idea){
  const r=idea.research;if(!r)return '';
+ if(idea.sources?.length&&idea.sources.every(s=>s.kind==='user-brief'))return '<section class="source"><h3>Research context</h3><p>This path explores your own brief. No public research was collected, and the brief does not establish demand or repeated needs.</p></section>';
  if(r.mode==='interest-only')return '<section class="source"><h3>Research signals</h3><p>Interest-led idea: no explicit complaint, wish, or troublesome workaround was detected in its cited excerpts.</p><p>This is a creative possibility, not evidence of an unmet need.</p></section>';
  const kinds={complaint:'Complaint / friction',request:'Wish / request',workaround:'Troublesome workaround'};
  const repeated=r.groups.filter(g=>g.repeated);
