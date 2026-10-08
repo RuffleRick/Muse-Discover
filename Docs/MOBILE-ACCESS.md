@@ -1,8 +1,8 @@
 # Private mobile access
 
-**Status: in progress, not complete.** On October 7, Tailscale 1.102.4 installation and PC sign-in (`Running`) were confirmed. MagicDNS is enabled. After explicit certificate-transparency approval, HTTPS was enabled and the Muse-owned private Serve tunnel started. HTTPS returned the pairing page (200), while unpaired library access returned 401. Physical phone pairing, cellular access, and disable/revocation testing remain.
+**Status: mobile browsing verified; final revocation check pending.** On October 7, Tailscale 1.102.4 installation and PC sign-in (`Running`) were confirmed. MagicDNS is enabled. After explicit certificate-transparency approval, HTTPS was enabled and the Muse-owned private Serve tunnel started. HTTPS returned the pairing page (200), while unpaired library access returned 401. The owner confirmed phone pairing and functional library access with Wi-Fi off. Physical-phone disable/revocation testing remains.
 
-Continue by signing in on the phone with the same account, pairing its browser, and testing cellular access. Do not mark remote access complete until the actual phone connection and disable/revocation behavior are verified.
+Phone pairing and cellular access are confirmed by the owner. Do not mark all remote-access verification complete until disable/revocation behavior is checked on that phone.
 
 After setup, Muse is designed to be reachable on your phone at home or away. Its ideas and model stay on the home PC. Access uses [Tailscale Serve](https://tailscale.com/docs/features/tailscale-serve), which shares HTTPS services only inside your private Tailscale network. Muse adds browser pairing before allowing library access.
 
@@ -15,6 +15,8 @@ After setup, Muse is designed to be reachable on your phone at home or away. Its
 5. Bookmark the HTTPS address. Browse/search saved ideas, pin and add notes, roll ideas, explore variations, and create/download Codex kits using the same PC library. There is no separate phone library to sync.
 
 ## Before leaving home
+
+For quick iPhone access, open Muse in Safari, choose Share (inside More on some Safari layouts), then Add to Home Screen. Name it Muse and tap Add. If Open as Web App is offered, turn it off for a simple shortcut using the already paired Safari browser. The shortcut still requires Tailscale, an awake PC, and enabled Muse mobile access; pairing still expires after twelve hours. See [Apple's Home Screen instructions](https://support.apple.com/guide/iphone/iphea86e5236/ios).
 
 Keep the PC powered on, connected to the internet, and awake. Muse cannot wake a sleeping PC. Enable mobile access before leaving. With access enabled, closing the desktop browser does not stop the lightweight Muse server. Generation and source fetching still happen only when you press Roll or request variations. All inference runs on the PC using its existing local model.
 
@@ -30,4 +32,4 @@ Tailscale is a separate network client and may remain connected after Muse stops
 - **Code expired / already used:** generate a new code on the PC. Five guesses are allowed per ten-minute cooldown across this gateway. Disabling/re-enabling resets pairing state and disconnects all browsers.
 - **Phone asks to pair again:** sessions expire, and disabling access or restarting Muse revokes them.
 
-The implementation has automated pairing/proxy checks, and PC sign-in, HTTPS setup, and the unpaired HTTPS endpoint are confirmed. A physical phone test over cellular data and revocation checks are still needed to validate the complete remote connection.
+The implementation has automated pairing/proxy checks. PC sign-in, HTTPS setup, and the unpaired HTTPS endpoint were directly checked; phone pairing and cellular library access were confirmed by the owner. Physical-phone revocation checks remain.

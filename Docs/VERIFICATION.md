@@ -1,5 +1,9 @@
 # Verification notes
 
+## Phone cellular access confirmed — October 7, 2026
+
+- The owner reported that the paired phone displays the library and appears functional with Wi-Fi off. This is user-confirmed cellular browsing, not an agent-observed end-to-end generation test. Physical-phone revocation testing remains pending. Documented Safari Home Screen shortcut steps using Apple's official guide; no phone settings were changed by the agent.
+
 ## Private HTTPS endpoint enabled — October 7, 2026
 
 - PC `status --json` reported Running with a private hostname; the admin console showed the PC connected on the Free plan. Personal-use onboarding completed; MagicDNS was already enabled. HTTPS was enabled only after the owner explicitly approved the permanent certificate-transparency hostname disclosure.
