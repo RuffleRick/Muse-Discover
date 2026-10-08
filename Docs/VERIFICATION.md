@@ -1,5 +1,11 @@
 # Verification notes
 
+## Private HTTPS endpoint enabled — October 7, 2026
+
+- PC `status --json` reported Running with a private hostname; the admin console showed the PC connected on the Free plan. Personal-use onboarding completed; MagicDNS was already enabled. HTTPS was enabled only after the owner explicitly approved the permanent certificate-transparency hostname disclosure.
+- The initial Serve configuration was empty. Muse's enable route started its owned private HTTPS Serve process on port 8443 with no Funnel configuration. A certificate-validated HTTPS request returned the pairing page (200); an unpaired request for `/api/state` returned 401. No library records were changed and no model request was made. Private hostnames, addresses, and pairing codes are excluded from Git.
+- Actual phone pairing, cellular access, and physical-phone session revocation are still unverified. These checks are required before marking remote access complete.
+
 ## Tailscale installation confirmed — October 7, 2026
 
 - After the owner accepted Windows approval, the standard Tailscale executable was present and reported version 1.102.4. `status --json` reported `NeedsLogin` with no private hostname. PC sign-in was initiated and the authentication page was opened for the owner. Login links and account/device details are excluded from project docs and Git.

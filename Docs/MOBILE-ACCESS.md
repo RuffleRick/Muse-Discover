@@ -1,8 +1,8 @@
 # Private mobile access
 
-**Status: in progress, not complete.** App-side access and pairing are built and covered by automated checks. On October 7, the owner approved Windows installation and Tailscale 1.102.4 was confirmed at its standard Program Files location. The client reported `NeedsLogin`; PC account sign-in was initiated. PC/phone sign-in, HTTPS setup, pairing, cellular access, and disable/revocation testing remain.
+**Status: in progress, not complete.** On October 7, Tailscale 1.102.4 installation and PC sign-in (`Running`) were confirmed. MagicDNS is enabled. After explicit certificate-transparency approval, HTTPS was enabled and the Muse-owned private Serve tunnel started. HTTPS returned the pairing page (200), while unpaired library access returned 401. Physical phone pairing, cellular access, and disable/revocation testing remain.
 
-Continue by completing PC sign-in, signing in on the phone with the same account, enabling HTTPS, and testing pairing and cellular access. Do not mark remote access complete until the actual phone connection and disable/revocation behavior are verified.
+Continue by signing in on the phone with the same account, pairing its browser, and testing cellular access. Do not mark remote access complete until the actual phone connection and disable/revocation behavior are verified.
 
 After setup, Muse is designed to be reachable on your phone at home or away. Its ideas and model stay on the home PC. Access uses [Tailscale Serve](https://tailscale.com/docs/features/tailscale-serve), which shares HTTPS services only inside your private Tailscale network. Muse adds browser pairing before allowing library access.
 
@@ -30,4 +30,4 @@ Tailscale is a separate network client and may remain connected after Muse stops
 - **Code expired / already used:** generate a new code on the PC. Five guesses are allowed per ten-minute cooldown across this gateway. Disabling/re-enabling resets pairing state and disconnects all browsers.
 - **Phone asks to pair again:** sessions expire, and disabling access or restarting Muse revokes them.
 
-The implementation has automated pairing/proxy checks and PC installation is confirmed. Account sign-in, HTTPS setup, and a physical phone test over cellular data are still needed to validate this PC's complete remote connection.
+The implementation has automated pairing/proxy checks, and PC sign-in, HTTPS setup, and the unpaired HTTPS endpoint are confirmed. A physical phone test over cellular data and revocation checks are still needed to validate the complete remote connection.
