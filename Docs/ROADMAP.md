@@ -12,7 +12,7 @@ Rows marked Implemented describe available features; the remaining rows are prop
 | Browsing verified · final check pending | Mobile access | PC setup and HTTPS verified; owner confirmed phone pairing and functional library access with Wi-Fi off. iPhone Home Screen shortcut instructions documented | Verify disable/revocation behavior on the phone before closing remote-access verification |
 | Optional | Expansion | Project-folder exports, model comparisons, creative reference boards | Expand access or depth while preserving intentional generation |
 
-Reddit search-provider integration is implemented and awaiting the owner's free Tavily API key for activation/live testing. It uses indexed search snippets, not direct Reddit API access or full-thread collection. See [setup and limitations](REDDIT-ACCESS.md). Direct Reddit API integration is deferred.
+Reddit search-provider integration is enabled with the owner's free Tavily account. Two live basic searches verified the connection, including seven usable minesweeper discussion snippets. Local model output using provider snippets still awaits an explicit roll. It uses indexed search snippets, not direct Reddit API access or full-thread collection. See [setup and limitations](REDDIT-ACCESS.md). Direct Reddit API integration is deferred.
 
 Own-idea entry is available in Library tools. A personal starting concept supports the same branching, comparison, organization, pinning, and Codex-kit tools, with personal-brief provenance retained.
 

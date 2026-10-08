@@ -1,5 +1,10 @@
 # Verification notes
 
+## Tavily account connected — October 7, 2026
+
+- The dashboard showed Researcher, 1,000 monthly credits, and pay-as-you-go off. The owner approved storing the existing key in Muse's private settings and enabling search. Status confirmed configured/enabled with no provider backoff. The key remains ignored by Git and is excluded from these notes.
+- Two live basic connection checks ran through Muse's existing search module and meter. Solitaire variants yielded no usable snippets; minesweeper yielded ten provider results and seven accepted discussion snippets. The meter recorded two attempts. No local inference or idea-library writes were performed by these checks; real generation with snippets remains untested.
+
 ## Phone cellular access confirmed — October 7, 2026
 
 - The owner reported that the paired phone displays the library and appears functional with Wi-Fi off. This is user-confirmed cellular browsing, not an agent-observed end-to-end generation test. Physical-phone revocation testing remains pending. Documented Safari Home Screen shortcut steps using Apple's official guide; no phone settings were changed by the agent.

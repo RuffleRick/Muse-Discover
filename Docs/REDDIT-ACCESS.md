@@ -1,6 +1,6 @@
 # Reddit search snippets through Tavily
 
-The requested search-provider route replaces the previous Reddit API request plan. The integration is built; it remains off until a free Tavily API key is saved in Muse. No Reddit access request was submitted. Direct Reddit API access and full-thread collection are deferred.
+The requested search-provider route replaces the previous Reddit API request plan. On October 7, the owner connected an existing Tavily key after confirming the free Researcher plan with pay-as-you-go disabled. Muse search is enabled. No Reddit access request was submitted. Direct Reddit API access and full-thread collection are deferred.
 
 ## Connect once
 
@@ -30,4 +30,4 @@ Snippets can inspire an idea, but they do not enter Muse's detected complaint/wi
 
 ## Verification status
 
-Mocked tests cover configuration and secret redaction, query settings, URL filtering and thread deduplication, persistent quota and concurrency, month rollover, provider backoff/exhaustion, corrupt settings, cache invalidation, snippet evidence metadata through imports/kits/prompts, and fallback to existing sources. Live Tavily searching and resulting local model output remain unverified until the owner connects a valid free-plan key and requests a roll.
+Mocked tests cover configuration and secret redaction, query settings, URL filtering and thread deduplication, persistent quota and concurrency, month rollover, provider backoff/exhaustion, corrupt settings, cache invalidation, snippet evidence metadata through imports/kits/prompts, and fallback to existing sources. Live connection checks used two basic searches: solitaire variants returned no usable snippets; minesweeper returned ten provider results, of which seven canonical discussion snippets passed Muse's filter. No model generation or library write was performed by these checks. Live model output using Tavily snippets remains unverified until the owner requests a fresh roll. Zero usable snippets for some topics is expected; existing sources remain available.
