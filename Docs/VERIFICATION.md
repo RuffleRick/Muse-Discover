@@ -1,5 +1,10 @@
 # Verification notes
 
+## Tailscale installation confirmed — October 7, 2026
+
+- After the owner accepted Windows approval, the standard Tailscale executable was present and reported version 1.102.4. `status --json` reported `NeedsLogin` with no private hostname. PC sign-in was initiated and the authentication page was opened for the owner. Login links and account/device details are excluded from project docs and Git.
+- Remote access remains in progress; installation alone does not establish phone connectivity. HTTPS, pairing, cellular access, and session revocation have not yet been verified on this PC.
+
 ## Personal idea entry — October 7, 2026
 
 - All 61 regression tests passed. Five added tests cover bounded personal input and defaults, unique family roots, v1 export/import and pin preservation, Codex-kit provenance without fake links, and the standard literal-evidence/feasibility/branch pipeline using a supplied fixture. The frontend test confirms saving sends only `/api/library/create` and opens escaped detail/branch controls without research or inference.
