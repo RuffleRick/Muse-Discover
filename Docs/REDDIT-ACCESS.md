@@ -6,7 +6,7 @@ The requested search-provider route replaces the previous Reddit API request pla
 
 1. Create a free **Researcher** account at [Tavily](https://app.tavily.com). Its [current pricing](https://www.tavily.com/pricing) offers 1,000 monthly credits with no credit card required. Keep paid usage disabled; do not enable pay-as-you-go.
 2. Copy an API key from the Tavily dashboard.
-3. Open Muse on the home PC and expand **Library tools → Reddit search snippets**.
+3. Open Muse on the home PC and expand **Library tools → Tavily · Reddit search**.
 4. Paste the key into the password field, confirm you use the free plan with paid usage disabled, and choose **Save key and enable**. Never paste the key into chat or GitHub.
 5. Enter a topic and choose **Roll fresh ideas**. Relevant Reddit search snippets join the existing Hacker News/Stack Exchange source pool. The app retains at most six source excerpts, so it does not include every search result.
 
@@ -31,3 +31,5 @@ Snippets can inspire an idea, but they do not enter Muse's detected complaint/wi
 ## Verification status
 
 Mocked tests cover configuration and secret redaction, query settings, URL filtering and thread deduplication, persistent quota and concurrency, month rollover, provider backoff/exhaustion, corrupt settings, cache invalidation, snippet evidence metadata through imports/kits/prompts, and fallback to existing sources. Live connection checks used two basic searches: solitaire variants returned no usable snippets; minesweeper returned ten provider results, of which seven canonical discussion snippets passed Muse's filter. No model generation or library write was performed by these checks. Live model output using Tavily snippets remains unverified until the owner requests a fresh roll. Zero usable snippets for some topics is expected; existing sources remain available.
+
+The Tavily section shows a prominent connection status above its key controls: enabled and ready, enabled but paused, disabled with a saved key, or not connected. **Check status** refreshes local settings without contacting Tavily or consuming a search attempt. Connection status reflects configuration, not a new API-key validity test.

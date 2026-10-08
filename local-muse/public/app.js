@@ -245,14 +245,20 @@ $('refreshMobile').onclick=()=>void refreshMobile();
 if(phone){$('mobileTools').hidden=true;$('redditSearchTools').hidden=true;$('stop').textContent='Disconnect phone';$('privacyNote').textContent='Private on your home PC · generation only when requested';}
 
 let redditSearchBusy=false;
-function showRedditSearch(d){$('redditSearchStatus').textContent=(d.enabled?'Enabled':d.configured?'Disabled · key saved':'Not connected')+' · '+d.used+' / '+d.limit+' Muse search attempts in '+d.month+(d.paused?' · paused by usage limit or provider backoff':'')+'. No full Reddit threads are fetched.';}
-async function refreshRedditSearch(){try{showRedditSearch(await api('/api/reddit-search'));}catch(e){$('redditSearchStatus').textContent=e.message;}}
+function showRedditSearch(d){
+ const status=$('redditSearchStatus');
+ status.dataset.state=d.enabled?(d.paused?'paused':'enabled'):'disabled';
+ status.textContent=(d.enabled?(d.paused?'Tavily enabled · searches paused':'Tavily enabled · ready for fresh rolls'):d.configured?'Tavily disabled · key saved':'Tavily not connected')+' — '+d.used+' / '+d.limit+' Muse search attempts this month.';
+ $('connectRedditSearch').textContent=d.configured?'Save / enable search':'Save key and enable';
+}
+async function refreshRedditSearch(){try{showRedditSearch(await api('/api/reddit-search'));}catch(e){$('redditSearchStatus').dataset.state='unknown';$('redditSearchStatus').textContent='Tavily status unavailable: '+e.message;}}
+$('refreshRedditSearch').onclick=()=>void refreshRedditSearch();
 async function configureRedditSearch(input){
  if(redditSearchBusy||busy||stopped)return;redditSearchBusy=true;
  for(const id of ['connectRedditSearch','disableRedditSearch','removeRedditKey'])$(id).disabled=true;
- $('redditSearchStatus').textContent='Saving search settings…';
+ $('redditSearchStatus').dataset.state='unknown';$('redditSearchStatus').textContent='Saving search settings…';
  try{showRedditSearch(await api('/api/reddit-search',input));}
- catch(e){$('redditSearchStatus').textContent=e.message;}
+ catch(e){$('redditSearchStatus').dataset.state='unknown';$('redditSearchStatus').textContent='Settings not saved: '+e.message;}
  finally{$('tavilyKey').value='';redditSearchBusy=false;for(const id of ['connectRedditSearch','disableRedditSearch','removeRedditKey'])$(id).disabled=stopped;}
 }
 $('connectRedditSearch').onclick=()=>void configureRedditSearch({key:$('tavilyKey').value,enabled:true,freePlanConfirmed:$('tavilyFreePlan').checked});
